@@ -12,7 +12,7 @@ Clone the repository.
 
 ```
 cd ~/
-git@github.com:coup-de-foudre/cdf-plasma-controller.git
+git clone git@github.com:coup-de-foudre/cdf-plasma-controller.git
 cd cdf-plasma-controller/
 ```
 
@@ -23,7 +23,7 @@ We require Python3 and pip, which you have to install:
 
 ```
 sudo apt-get update && sudo apt-get install -y python3-pip
-pip3 install -r requirements.txt
+sudo pip3 install -r requirements.txt
 ```
 
 #### Install `pigpio` from source and start the daemon
