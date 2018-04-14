@@ -22,12 +22,11 @@ from abc import ABC, abstractmethod
 from numbers import Real
 
 
-class PWMException(Exception):
-    """Base class for all exceptions in this module"""
+class ModulatorException(Exception):
     pass
 
 
-class AbstractPWM(ABC):
+class BaseModulator(ABC):
 
     @property
     @abstractmethod
@@ -44,22 +43,48 @@ class AbstractPWM(ABC):
 
     @property
     @abstractmethod
-    def duty_cycle(self) -> Real:
-        raise NotImplementedError
-
-    @duty_cycle.setter
-    @abstractmethod
-    def duty_cycle(self, duty_cycle: Real) -> None:
-        """Set the duty cycle without starting or stopping the PWM"""
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
     def frequency(self) -> Real:
         raise NotImplementedError
 
     @frequency.setter
     @abstractmethod
     def frequency(self, value: Real) -> None:
-        """Set the frequency without starting or stopping the PWM"""
         raise NotImplementedError
+
+    def get_frequency(self) -> Real:
+        return self.frequency
+
+    def set_frequency(self, value: Real) -> None:
+        self.frequency = value
+
+    @property
+    @abstractmethod
+    def intensity(self) -> Real:
+        raise NotImplementedError
+
+    @intensity.setter
+    @abstractmethod
+    def intensity(self, value: Real):
+        raise NotImplementedError
+
+    def get_intensity(self) -> Real:
+        return self.intensity
+
+    def set_intensity(self, value: Real) -> None:
+        self.intensity = value
+
+    @property
+    @abstractmethod
+    def center(self) -> Real:
+        raise NotImplementedError
+
+    @center.setter
+    @abstractmethod
+    def center(self, value: Real) -> None:
+        raise NotImplementedError
+
+    def get_center(self) -> Real:
+        return self.center
+
+    def set_center(self, value: Real) -> None:
+        self.center = value

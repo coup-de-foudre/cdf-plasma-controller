@@ -24,8 +24,9 @@ import argparse
 import sys
 
 from controller.keyboard_controller import KeyboardController
+from pwm.mock_pwm import MockPWM
 from pwm.pi_pwm import PiHardwarePWM
-from pwm.simple_interrupter import SimpleInterrupter
+from interrupter.simple_interrupter import SimpleInterrupter
 
 
 def main():
@@ -79,9 +80,17 @@ def main():
         required=True
     )
 
+    parser.add_argument("--mock",
+                        action="store_true",
+                        help="use mock PWM to test controller")
+
     args = parser.parse_args()
 
-    pwm = PiHardwarePWM(args.pin, args.host)
+    if args.mock:
+        pwm = MockPWM()
+    else:
+        pwm = PiHardwarePWM(args.pin, args.host)
+
     pwm.frequency = args.pwm_frequency
     pwm.duty_cycle = args.pwm_duty_cycle
 
