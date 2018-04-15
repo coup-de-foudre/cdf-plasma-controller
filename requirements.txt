@@ -20,3 +20,4 @@
 
 pigpio
 typing
+-e ./pigpio
