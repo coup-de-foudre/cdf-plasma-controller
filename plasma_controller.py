@@ -36,8 +36,8 @@ def main():
     parser.add_argument(
         "--host",
         type=str,
-        default='localhost',
-        help="raspberry PI host (localhost)",
+        default=None,
+        help="raspberry PI host (None=local daemon)",
     )
 
     parser.add_argument(

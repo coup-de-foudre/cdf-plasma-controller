@@ -209,7 +209,7 @@ class KeyboardController(BaseController):
             ord(")"),
             min_value=0.0,
             max_value=float("inf"),
-            initial_value=self._pwm_frequency_modulator.center/100.0,
+            initial_value=self._pwm_frequency_modulator.center/10.0,
         )
 
         self._pwm_duty_cycle_knob = SimpleKnob(
