@@ -18,10 +18,7 @@
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-
 from abc import ABC, abstractmethod
-from pwm.abstract_pwm import AbstractPWM
-from pwm.abstract_interrupter import AbstractPWMInterrupter
 
 
 class ControllerException(Exception):
@@ -29,17 +26,7 @@ class ControllerException(Exception):
     pass
 
 
-class AbstractController(ABC):
-
-    @property
-    @abstractmethod
-    def pwm(self) -> AbstractPWM:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def interrupter(self) -> AbstractPWMInterrupter:
-        raise NotImplementedError
+class BaseController(ABC):
 
     @abstractmethod
     def run(self):

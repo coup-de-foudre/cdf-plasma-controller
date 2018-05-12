@@ -26,7 +26,7 @@ import threading
 
 import pigpio
 
-from .abstract_pwm import AbstractPWM, PWMException
+from .base_pwm import BasePWM, PWMException
 
 
 logger = logging.getLogger(__name__)
@@ -40,20 +40,24 @@ class PigpioException(PiPWMException, ABC):
     """All pigpio errors are registered as instances of this class"""
     pass
 
+
 PigpioException.register(pigpio.error)
 
 
-class PiHardwarePWM(AbstractPWM):
+class PiHardwarePWM(BasePWM):
     """Thread-safe hardware PWM for the RPi"""
 
     _MAX_DUTY_CYCLE_TICKS = 1000000
 
     def __init__(self,
                  gpio_pin: Integral,
-                 host: str='localhost',
-                 port: Integral=8888):
+                 host: str=None,
+                 port: Integral='8888'):
 
-        self._pi = pigpio.pi(host, port)
+        if host is None:
+            self._pi = pigpio.pi()
+        else:
+            self._pi = pigpio.pi(host, port)
         self._pin = gpio_pin
         self._is_stopped = True
         self._frequency = 0.0
@@ -122,6 +126,7 @@ class PiHardwarePWM(AbstractPWM):
 
     @staticmethod
     def _validate_duty_cycle(duty_cycle: Real):
+        # noinspection PyTypeChecker
         if duty_cycle < 0 or duty_cycle > 1:
             raise PiPWMException(
                 "PWM duty cycle should be in [0,1], not %s", duty_cycle)

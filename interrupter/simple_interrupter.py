@@ -17,16 +17,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
+
 import threading
 from numbers import Real
 from concurrent.futures import ThreadPoolExecutor
 import time
 
-from .abstract_interrupter import AbstractPWMInterrupter, InterrupterException
-from .abstract_pwm import AbstractPWM
+from interrupter.base_interrupter import BaseInterrupter, InterrupterException
+from pwm.base_pwm import BasePWM
 
 
-class SimpleInterrupter(AbstractPWMInterrupter):
+class SimpleInterrupter(BaseInterrupter):
     """Interrupter that uses PWM start/stop calls to turn on and off a PWM
 
     This class is prone to jitter, particularly when the on/off calls to the
@@ -34,9 +35,9 @@ class SimpleInterrupter(AbstractPWMInterrupter):
     """
 
     def __init__(self,
-                 pwm: AbstractPWM,
-                 frequency: Real,
-                 duty_cycle: Real=0.5):
+                 pwm: BasePWM,
+                 frequency: float,
+                 duty_cycle: float=0.5):
 
         self._validate_frequency(frequency)
         self._validate_duty_cycle(duty_cycle)
@@ -64,7 +65,7 @@ class SimpleInterrupter(AbstractPWMInterrupter):
                 frequency)
 
     @staticmethod
-    def _validate_duty_cycle(duty_cycle: Real):
+    def _validate_duty_cycle(duty_cycle: float):
         if duty_cycle < 0 or duty_cycle > 1:
             raise InterrupterException(
                 "Interrupter duty cycle should be in [0,1], not %s", duty_cycle)
@@ -79,16 +80,16 @@ class SimpleInterrupter(AbstractPWMInterrupter):
         self._frequency = value
 
     @property
-    def duty_cycle(self) -> Real:
+    def duty_cycle(self) -> float:
         return self._duty_cycle
 
     @duty_cycle.setter
-    def duty_cycle(self, value: Real):
+    def duty_cycle(self, value: float):
         self._validate_duty_cycle(value)
         self._duty_cycle = value
 
     @property
-    def pwm(self) -> AbstractPWM:
+    def pwm(self) -> BasePWM:
         return self._pwm
 
     @property
@@ -130,7 +131,7 @@ class SimpleInterrupter(AbstractPWMInterrupter):
             self._spin_wait(toggle_seconds)
         self._time_error = time.time() - toggle_time - toggle_seconds
 
-    def _spin_wait(self, time_seconds: float) -> float:
+    def _spin_wait(self, time_seconds: float):
         start = time.time()
         now = start
         while now < start + time_seconds and not self._stop_signal:

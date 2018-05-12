@@ -18,23 +18,22 @@
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-
 from abc import ABC, abstractmethod
 from numbers import Real
 
-from .abstract_pwm import AbstractPWM, PWMException
+from pwm.base_pwm import BasePWM
 
 
-class InterrupterException(PWMException):
+class InterrupterException(Exception):
     pass
 
 
-class AbstractPWMInterrupter(ABC):
+class BaseInterrupter(ABC):
     """Cycle on and off PWM at a fixed interval"""
 
     @property
     @abstractmethod
-    def pwm(self) -> AbstractPWM:
+    def pwm(self) -> BasePWM:
         raise NotImplementedError
 
     @property
@@ -60,6 +59,12 @@ class AbstractPWMInterrupter(ABC):
     def duty_cycle(self, duty_cycle: Real) -> None:
         raise NotImplementedError
 
+    def get_duty_cycle(self) -> Real:
+        return self.duty_cycle
+
+    def set_duty_cycle(self, value: Real) -> None:
+        self.duty_cycle = value
+
     @property
     @abstractmethod
     def frequency(self) -> Real:
@@ -69,3 +74,9 @@ class AbstractPWMInterrupter(ABC):
     @abstractmethod
     def frequency(self, value: Real) -> None:
         raise NotImplementedError
+
+    def get_frequency(self) -> Real:
+        return self.frequency
+
+    def set_frequency(self, value: Real) -> None:
+        self.frequency = value
