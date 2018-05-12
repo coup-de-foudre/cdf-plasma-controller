@@ -28,7 +28,7 @@ sudo pip3 install -r requirements.txt
 
 #### Install `pigpio` from source and start the daemon
 
-The CdF Plasma Controller includes the `pigpio` installation and  requires
+The CdF Plasma Controller includes the `pigpio` installation and requires
 that the `pigpiod` daemon. To install the daemon and have it run on startup,
 use
 
@@ -43,6 +43,12 @@ sudo service pigpiod restart
 ```
 
 See the [pigpio README](./pigpio/README) for more details.
+
+**Note**
+While the code in this repo is licensed under the GNU Affero License
+(see below), you may also receive the `pigpio` code separately from this
+project under a different license. See
+[here](https://github.com/joan2937/pigpio) for details.
 
 
 ### On a client machine external to the Raspberry Pi
