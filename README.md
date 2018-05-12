@@ -28,36 +28,11 @@ sudo pip3 install -r requirements.txt
 
 #### Install `pigpio` from source and start the daemon
 
-The CdF Plasma Controller requires the `pigpio` installation, and in particular,
-the `pigpiod` daemon should be running. To install the `pigpio` driver on a 
-Raspberry Pi, run
+The CdF Plasma Controller includes the `pigpio` installation and requires
+that the `pigpiod` daemon. To install the daemon and have it run on startup,
+use
 
-```
-wget https://github.com/joan2937/pigpio/archive/V67.tar.gz
-tar -xf V67.tar.gz
-cd pigpio-67
-make
-sudo make install
-```
-
-You then need to start the daemon using
-
-```
-sudo pigpiod
-```
-
-#### Running the daemon on startup
-
-To have the daemon run on startup, first `cd` into the `pigpio-67` directory
-above and then run
-
-```
-cd util/
-sudo cp pigpiod /etc/init.d/pigpiod
-sudo chmod +x /etc/init.d/pigpiod
-sudo update-rc.d pigpiod defaults
-sudo service pigpiod start
-```
+    make && sudo make install && sudo make service
 
 You can now start, stop and restart the `pigpiod` service using the commands
 
@@ -67,12 +42,13 @@ sudo service pigpiod stop
 sudo service pigpiod restart
 ```
 
-See the `README.md` [here](https://github.com/joan2937/pigpio/tree/master/util)
-for more details. 
+See the [pigpio README](./pigpio/README) for more details.
 
-> **Note** If you installed the older version of `pigpiod` using `apt-get`,
-> you may need to unmask previous service using `sudo systemctl unmask pigpiod`.
-> (You can check if it's masked using ` sudo systemctl status pigpiod`.)
+**Note**
+While the code in this repo is licensed under the GNU Affero License
+(see below), you may also receive the `pigpio` code separately from this
+project under a different license. See
+[here](https://github.com/joan2937/pigpio) for details.
 
 
 ### On a client machine external to the Raspberry Pi
