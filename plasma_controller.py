@@ -53,7 +53,7 @@ def main():
         dest='interrupter_duty_cycle',
         type=float,
         default=1.0,
-        help="duty cycle of the interrupter (1.0 = no interrupter by default)",
+        help="duty cycle of the interrupter (default == 1.0 == no interrupter)",
     )
 
     parser.add_argument(
