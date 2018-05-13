@@ -26,10 +26,6 @@ from math import log10
 from numbers import Real
 from typing import Callable, List, Dict
 
-from interrupter.base_interrupter import BaseInterrupter
-from interrupter.simple_interrupter import SimpleInterrupter
-from modulator.callback_modulator import CallbackModulator
-from pwm.base_pwm import BasePWM
 from .base_controller import BaseController, ControllerException
 
 logger = logging.getLogger(__name__)
@@ -46,35 +42,44 @@ _CURSES_INT_TO_UNICODE = {
     KEY_DOWN: "↓",
 }
 
+_UNICODE_TO_CURSES_INT = {v: k for k, v in _CURSES_INT_TO_UNICODE.items()}
 
-def format_curses_int(curses_int: int) -> str:
+
+def curses_int_to_unicode(curses_int: int) -> str:
     """Convert a curses int to an interpretable character"""
     return _CURSES_INT_TO_UNICODE.get(curses_int, chr(curses_int))
+
+
+def unicode_to_curses_int(unicode_chr: str) -> int:
+    if len(unicode_chr) != 1:
+        raise KeyboardException("Cannot convert {} to curses integer: "
+                                "length must equal one".format(unicode_chr))
+    return _UNICODE_TO_CURSES_INT.get(unicode_chr, ord(unicode_chr))
 
 
 class AbstractKeyboardKnob(ABC):
     def __init__(self,
                  name: str,
                  callback: Callable[[Real], None],
-                 decrement_key: int,
-                 increment_key: int,
+                 decrement_key: str,
+                 increment_key: str,
                  min_value: Real,
                  max_value: Real,
                  initial_value: Real):
-        """
+        """Get a keyboard knob
 
         :param name: Name of the knob to display
         :param callback: Set the value on the knob
-        :param decrement_key: Character (int) from curses to decrement knob
-        :param increment_key: Character (int) from curses to increment knob
+        :param decrement_key: Unicode character to decrement knob
+        :param increment_key: Unicode character to increment knob
         :param min_value: Minimum knob value
         :param max_value: Maximum knob value
         :param initial_value: The start value for the knob
         """
         self._name = name
         self._setter = callback
-        self._decrement_int = decrement_key
-        self._increment_int = increment_key
+        self._decrement_int = unicode_to_curses_int(decrement_key)
+        self._increment_int = unicode_to_curses_int(increment_key)
         self._min_value = min_value
         self._max_value = max_value
         self._validate_value(min_value, max_value, initial_value)
@@ -123,8 +128,8 @@ class SimpleKnob(AbstractKeyboardKnob):
     def __init__(self,
                  name: str,
                  callback: Callable[[Real], None],
-                 decrement_key: int,
-                 increment_key: int,
+                 decrement_key: str,
+                 increment_key: str,
                  min_value: Real,
                  max_value: Real,
                  initial_value: Real,
@@ -148,99 +153,38 @@ class ProportionalTickKnob(AbstractKeyboardKnob):
 
 class KeyboardController(BaseController):
 
-    def __init__(self, interrupter: SimpleInterrupter):
+    """Control a set of knobs with a keyboard.
+
+    Note that whatever the knobs are controlling should be "running"
+    before calling this function
+    """
+
+    def __init__(self, knobs: List[AbstractKeyboardKnob]):
+        self._knobs = knobs
         self._screen = None
-        self._interrupter = interrupter
-        self._pwm = interrupter.pwm
         self._break_int = ord('q')
-
-        self._pwm_frequency_modulator = CallbackModulator(
-            lambda f: self._pwm.set_frequency(f),
-            frequency=0.0,
-            intensity=0.0,
-            center=self._pwm.frequency,
-        )
-
-        self._interrupter_frequency_knob = ProportionalTickKnob(
-            "Interrupter frequency (Hz)",
-            lambda f: self._interrupter.set_frequency(f),
-            KEY_LEFT,
-            KEY_RIGHT,
-            0.0,
-            float("inf"),
-            self._interrupter.frequency,
-        )
-
-        self._interrupter_duty_cycle_knob = SimpleKnob(
-            "Interrupter duty cycle",
-            lambda d: self._interrupter.set_duty_cycle(d),
-            ord('{'),
-            ord('}'),
-            0.0,
-            1.0,
-            self._interrupter.duty_cycle,
-        )
-
-        self._pwm_frequency_knob = ProportionalTickKnob(
-            "PWM frequency (Hz)",
-            lambda c: self._pwm_frequency_modulator.set_center(c),
-            KEY_DOWN,
-            KEY_UP,
-            0.0,
-            float("inf"),
-            self._pwm_frequency_modulator.center,
-        )
-
-        self._pwm_frequency_modulation_freq_knob = SimpleKnob(
-            "PWM modulation frequency (Hz)",
-            lambda f: self._pwm_frequency_modulator.set_frequency(f),
-            ord("_"),
-            ord("+"),
-            min_value=0.0,
-            max_value=30.0,
-            initial_value=0.0,
-            num_ticks=30,
-        )
-
-        self._pwm_freqency_modulation_intensity_knob = ProportionalTickKnob(
-            "PWM modulation intensity (Hz)",
-            lambda i: self._pwm_frequency_modulator.set_intensity(i),
-            ord("("),
-            ord(")"),
-            min_value=0.0,
-            max_value=float("inf"),
-            initial_value=self._pwm_frequency_modulator.center/10.0,
-        )
-
-        self._pwm_duty_cycle_knob = SimpleKnob(
-            "PWM duty cycle",
-            lambda d: self._pwm.set_duty_cycle(d),
-            ord('<'),
-            ord('>'),
-            0.0,
-            1.0,
-            self._pwm.duty_cycle,
-        )
-
-        self._knobs = [
-            self._interrupter_frequency_knob,
-            self._pwm_frequency_knob,
-            self._pwm_frequency_modulation_freq_knob,
-            self._pwm_freqency_modulation_intensity_knob,
-            self._interrupter_duty_cycle_knob,
-            self._pwm_duty_cycle_knob,
-        ]
-
         self._keys_to_knobs = self._get_keys_to_knobs(self._knobs)
 
-    @staticmethod
-    def _get_keys_to_knobs(knobs: List[AbstractKeyboardKnob]) -> Dict[
+    def _get_keys_to_knobs(self, knobs: List[AbstractKeyboardKnob]) -> Dict[
             int, Callable[[], None]]:
         keys_to_knobs = {}
         for knob in knobs:
-            keys_to_knobs[knob.increment_int] = knob.increment
-            keys_to_knobs[knob.decrement_int] = knob.decrement
+            self._add_knob_to_dict(keys_to_knobs,
+                                   knob.increment_int,
+                                   knob.increment)
+            self._add_knob_to_dict(keys_to_knobs,
+                                   knob.decrement_int,
+                                   knob.decrement)
         return keys_to_knobs
+
+    @staticmethod
+    def _add_knob_to_dict(keys_to_knobs: Dict[int, Callable[[], None]],
+                          key_int: int,
+                          control: Callable[[], None]):
+        if key_int in keys_to_knobs:
+            raise KeyboardException("Key already used: {}"
+                                    "".format(curses_int_to_unicode(key_int)))
+        keys_to_knobs[key_int] = control
 
     def _run_with_screen(self, screen) -> None:
         """
@@ -263,7 +207,7 @@ class KeyboardController(BaseController):
     def _render_top_line(self):
         _, width = self._screen.getmaxyx()
         message = "To quit, type '{}'".format(
-            format_curses_int(self._break_int))
+            curses_int_to_unicode(self._break_int))
         message += " " * (width - len(message))
         self._screen.addstr(0, 0, message, A_STANDOUT)
 
@@ -274,21 +218,11 @@ class KeyboardController(BaseController):
     def _render_knob(self, knob: AbstractKeyboardKnob, window_line: int):
         details = "{:30.29} ({}=dec, {}=inc): {:4.2f}".format(
             knob.name,
-            format_curses_int(knob.decrement_int),
-            format_curses_int(knob.increment_int),
+            curses_int_to_unicode(knob.decrement_int),
+            curses_int_to_unicode(knob.increment_int),
             knob.value,
         )
         self._screen.addstr(window_line, 0, details)
 
     def run(self):
-        self.interrupter.start()
         wrapper(self._run_with_screen)
-        self.interrupter.stop()
-
-    @property
-    def pwm(self) -> BasePWM:
-        return self._pwm
-
-    @property
-    def interrupter(self) -> BaseInterrupter:
-        return self._interrupter

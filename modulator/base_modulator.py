@@ -59,19 +59,19 @@ class BaseModulator(ABC):
 
     @property
     @abstractmethod
-    def intensity(self) -> Real:
+    def spread(self) -> Real:
         raise NotImplementedError
 
-    @intensity.setter
+    @spread.setter
     @abstractmethod
-    def intensity(self, value: Real):
+    def spread(self, value: Real):
         raise NotImplementedError
 
-    def get_intensity(self) -> Real:
-        return self.intensity
+    def get_spread(self) -> Real:
+        return self.spread
 
-    def set_intensity(self, value: Real) -> None:
-        self.intensity = value
+    def set_spread(self, value: Real) -> None:
+        self.spread = value
 
     @property
     @abstractmethod
