@@ -36,7 +36,7 @@ class CallbackModulator(BaseModulator):
     def __init__(self,
                  callback: Callable[[Real], None],
                  frequency: Real,
-                 intensity: Real,
+                 spread: Real,
                  center: Real,
                  update_frequency: Real = 60.0,
                  waveform: Callable[[Real], Real]=math.sin,
@@ -45,7 +45,7 @@ class CallbackModulator(BaseModulator):
         super().__init__()
         self._callback = callback
         self._frequency = frequency
-        self._intensity = intensity
+        self._spread = spread
         self._center = center
         self._update_frequency = update_frequency
         self._waveform = waveform
@@ -73,12 +73,12 @@ class CallbackModulator(BaseModulator):
         self._frequency = value
 
     @property
-    def intensity(self) -> Real:
-        return self._intensity
+    def spread(self) -> Real:
+        return self._spread
 
-    @intensity.setter
-    def intensity(self, value: Real):
-        self._intensity = value
+    @spread.setter
+    def spread(self, value: Real):
+        self._spread = value
 
     @property
     def center(self) -> Real:
@@ -87,6 +87,10 @@ class CallbackModulator(BaseModulator):
     @center.setter
     def center(self, value: Real) -> None:
         self._center = value
+
+    @property
+    def update_frequency(self) -> Real:
+        return self._update_frequency
 
     @property
     def is_stopped(self) -> bool:
@@ -125,7 +129,7 @@ class CallbackModulator(BaseModulator):
 
     def _compute_callback_arg(self, current_time: Real):
         # Compute the new phase offset so that frequency changes
-        # do not create a discontinuities
+        # do not create discontinuities
         self._phase_offset = (
                 self._phase_offset + _2PI * current_time * (
                     1.0 / self._previous_frequency - 1.0 / self._frequency
@@ -135,7 +139,7 @@ class CallbackModulator(BaseModulator):
             _2PI * current_time / self.frequency + self._phase_offset) % _2PI
 
         self._previous_frequency = self._frequency
-        return self.intensity * self._waveform(phase) + self.center
+        return self.spread * self._waveform(phase) + self.center
 
     def _spin_wait(self, time_seconds: float):
         start = time.time()
