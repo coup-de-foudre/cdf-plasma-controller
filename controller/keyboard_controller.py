@@ -148,7 +148,10 @@ class SimpleKnob(AbstractKeyboardKnob):
 class ProportionalTickKnob(AbstractKeyboardKnob):
     @property
     def tick_size(self) -> Real:
-        return 10.0 ** (int(log10(self._value / 2.0))) / 100.0
+        if self._value <= 0.0:
+            return 0.0001
+        else:
+            return 10.0 ** (int(log10(self._value / 2.0))) / 100.0
 
 
 class KeyboardController(BaseController):

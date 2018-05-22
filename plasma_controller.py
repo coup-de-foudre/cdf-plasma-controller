@@ -70,7 +70,7 @@ def parse_arguments():
         '-M', '--modulator-spread',
         dest='modulator_spread',
         type=float,
-        default=0.0,
+        default=1.0,
         help="frequency spread (Hz) of FM modulator",
     )
 
@@ -165,10 +165,10 @@ def keyboard_control_knobs(interrupter: BaseInterrupter,
         min_value=0.0,
         max_value=30.0,
         initial_value=pwm_frequency_modulator.frequency,
-        num_ticks=30,
+        num_ticks=300,
     )
 
-    pwm_frequency_modulation_intensity_knob = ProportionalTickKnob(
+    pwm_frequency_modulation_spread_knob = ProportionalTickKnob(
         "PWM FM spread (Hz)",
         lambda i: pwm_frequency_modulator.set_spread(i),
         "(",
@@ -184,7 +184,7 @@ def keyboard_control_knobs(interrupter: BaseInterrupter,
         interrupter_duty_cycle_knob,
         pwm_duty_cycle_knob,
         pwm_frequency_modulation_freq_knob,
-        pwm_frequency_modulation_intensity_knob,
+        pwm_frequency_modulation_spread_knob,
     ]
 
     return knobs
@@ -219,11 +219,14 @@ def main():
     # Try-catch-finally is a workaround for issue here:
     # https://www.raspberrypi.org/forums/viewtopic.php?t=66445&start=175#p1156097
     try:
+        pwm.start()
         interrupter.start()
+        pwm_frequency_modulator.start()
         controller.run()
     except AttributeError:
         pass
     finally:
+        pwm_frequency_modulator.stop()
         interrupter.stop()
         pwm.stop()
 
