@@ -102,8 +102,8 @@ class CallbackModulator(BaseModulator):
             self._run_future = self._executor.submit(self._run)
 
     def stop(self) -> None:
+        self._stop_signal = True
         if not self.is_stopped:
-            self._stop_signal = True
             self._wait_for_run_to_finish()
 
     def _wait_for_run_to_finish(self):
@@ -112,8 +112,8 @@ class CallbackModulator(BaseModulator):
     def _run(self) -> None:
         with self._run_lock:
             self._is_stopped = False
-            self._is_stopped = True
             self._run_timing_loop()
+            self._is_stopped = True
 
     def _run_timing_loop(self) -> None:
         while not self._stop_signal:
@@ -131,15 +131,13 @@ class CallbackModulator(BaseModulator):
         # Compute the new phase offset so that frequency changes
         # do not create discontinuities
         self._phase_offset = (
-                self._phase_offset + _2PI * current_time * (
-                    1.0 / self._previous_frequency - 1.0 / self._frequency
+                self._phase_offset + _2PI*current_time * (
+                    1.0 * self._previous_frequency - 1.0 * self._frequency
                 )) % _2PI
-
         phase = (
-            _2PI * current_time / self.frequency + self._phase_offset) % _2PI
-
+            _2PI*current_time * self.frequency + self._phase_offset) % _2PI
         self._previous_frequency = self._frequency
-        return self.spread * self._waveform(phase) + self.center
+        return max(0, self.spread * self._waveform(phase) + self.center)
 
     def _spin_wait(self, time_seconds: float):
         start = time.time()
