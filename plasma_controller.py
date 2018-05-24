@@ -163,9 +163,9 @@ def keyboard_control_knobs(interrupter: BaseInterrupter,
         "_",
         "+",
         min_value=0.0,
-        max_value=30.0,
+        max_value=20.0,
         initial_value=pwm_frequency_modulator.frequency,
-        num_ticks=300,
+        num_ticks=200,
     )
 
     pwm_frequency_modulation_spread_knob = ProportionalTickKnob(
@@ -191,7 +191,7 @@ def keyboard_control_knobs(interrupter: BaseInterrupter,
 
 
 def main():
-
+    sys.setswitchinterval(5e-4)
     args = parse_arguments()
 
     if args.mock:
@@ -211,6 +211,7 @@ def main():
         frequency=args.modulator_frequency,
         spread=args.modulator_spread,
         center=pwm.frequency,
+        update_frequency=40,
     )
 
     control_knobs = keyboard_control_knobs(interrupter, pwm_frequency_modulator)
