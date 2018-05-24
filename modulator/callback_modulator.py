@@ -143,7 +143,7 @@ class CallbackModulator(BaseModulator):
         return max(0, self.spread * self._waveform(phase) + self.center)
 
     def _wait(self, time_seconds: float):
-        sleep_time = max(0, time_seconds - 2*self._thread_switch_interval)
+        sleep_time = max(0, time_seconds - 0.5*self._thread_switch_interval)
         now = time.time()
         end = now + time_seconds
         time.sleep(sleep_time)
