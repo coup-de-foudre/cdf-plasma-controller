@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
-
+import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -60,6 +60,9 @@ class CallbackModulator(BaseModulator):
 
         self._time_error = 0.0
         self._run_lock = threading.Lock()
+
+        # The switch interval should not be changed after this
+        self._thread_switch_interval = sys.getswitchinterval()
 
     def __del__(self):
         self.stop()
@@ -122,7 +125,7 @@ class CallbackModulator(BaseModulator):
             callback_seconds = time.time() - callback_start_time
             wait_seconds = max(
                 0.0, 1.0 / self._update_frequency - callback_seconds)
-            self._spin_wait(wait_seconds)
+            self._wait(wait_seconds)
 
     def _do_callback(self, current_time: Real) -> None:
         self._callback(self._compute_callback_arg(current_time))
@@ -139,8 +142,12 @@ class CallbackModulator(BaseModulator):
         self._previous_frequency = self._frequency
         return max(0, self.spread * self._waveform(phase) + self.center)
 
-    def _spin_wait(self, time_seconds: float):
-        start = time.time()
-        now = start
-        while now < start + time_seconds and not self._stop_signal:
+    def _wait(self, time_seconds: float):
+        sleep_time = max(0, time_seconds - 2*self._thread_switch_interval)
+        now = time.time()
+        end = now + time_seconds
+        time.sleep(sleep_time)
+
+        # Spin wait for remaining time
+        while now < end and not self._stop_signal:
             now = time.time()
