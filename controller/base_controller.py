@@ -31,3 +31,11 @@ class BaseController(ABC):
     @abstractmethod
     def run(self):
         raise NotImplementedError
+
+    @abstractmethod
+    def __enter__(self) -> 'BaseController':
+        raise NotImplementedError
+
+    @abstractmethod
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        raise NotImplementedError

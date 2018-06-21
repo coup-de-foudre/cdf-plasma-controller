@@ -26,6 +26,9 @@ from math import log10
 from numbers import Real
 from typing import Callable, List, Dict
 
+from interrupter.base_interrupter import BaseInterrupter
+from modulator.base_modulator import BaseModulator
+from pwm.base_pwm import BasePWM
 from .base_controller import BaseController, ControllerException
 
 logger = logging.getLogger(__name__)
@@ -154,6 +157,85 @@ class ProportionalTickKnob(AbstractKeyboardKnob):
             return 10.0 ** (int(log10(self._value / 2.0))) / 100.0
 
 
+def keyboard_control_knobs(interrupter: BaseInterrupter,
+                           pwm_frequency_modulator: BaseModulator,
+                           ) -> List[AbstractKeyboardKnob]:
+
+    pwm = interrupter.pwm
+
+    interrupter_frequency_knob = ProportionalTickKnob(
+        "Interrupter frequency (Hz)",
+        lambda f: interrupter.set_frequency(f),
+        "←",
+        "→",
+        0.0,
+        float("inf"),
+        interrupter.frequency,
+    )
+
+    interrupter_duty_cycle_knob = SimpleKnob(
+        "Interrupter duty cycle",
+        lambda d: interrupter.set_duty_cycle(d),
+        '{',
+        '}',
+        0.0,
+        1.0,
+        interrupter.duty_cycle,
+    )
+
+    pwm_frequency_knob = ProportionalTickKnob(
+        "PWM frequency (Hz)",
+        lambda c: pwm_frequency_modulator.set_center(c),
+        "↓",
+        "↑",
+        0.0,
+        float("inf"),
+        pwm_frequency_modulator.center,
+    )
+
+    pwm_duty_cycle_knob = SimpleKnob(
+        "PWM duty cycle",
+        lambda d: pwm.set_duty_cycle(d),
+        '<',
+        '>',
+        0.0,
+        1.0,
+        pwm.duty_cycle,
+    )
+
+    pwm_frequency_modulation_freq_knob = SimpleKnob(
+        "PWM FM frequency (Hz)",
+        lambda f: pwm_frequency_modulator.set_frequency(f),
+        "_",
+        "+",
+        min_value=0.0,
+        max_value=20.0,
+        initial_value=pwm_frequency_modulator.frequency,
+        num_ticks=200,
+    )
+
+    pwm_frequency_modulation_spread_knob = ProportionalTickKnob(
+        "PWM FM spread (Hz)",
+        lambda i: pwm_frequency_modulator.set_spread(i),
+        "(",
+        ")",
+        min_value=0.0,
+        max_value=float("inf"),
+        initial_value=pwm_frequency_modulator.spread,
+    )
+
+    knobs = [
+        interrupter_frequency_knob,
+        pwm_frequency_knob,
+        interrupter_duty_cycle_knob,
+        pwm_duty_cycle_knob,
+        pwm_frequency_modulation_freq_knob,
+        pwm_frequency_modulation_spread_knob,
+    ]
+
+    return knobs
+
+
 class KeyboardController(BaseController):
 
     """Control a set of knobs with a keyboard.
@@ -161,11 +243,17 @@ class KeyboardController(BaseController):
     Note that whatever the knobs are controlling should be "running"
     before calling this function
     """
-
-    def __init__(self, knobs: List[AbstractKeyboardKnob]):
-        self._knobs = knobs
+    def __init__(self,
+                 pwm: BasePWM,
+                 pwm_frequency_modulator: BaseModulator,
+                 interrupter: BaseInterrupter):
+        self._pwm = pwm
+        self._pwm_frequency_modulator = pwm_frequency_modulator
+        self._interrupter = interrupter
         self._screen = None
         self._break_int = ord('q')
+        self._knobs = keyboard_control_knobs(
+            interrupter, pwm_frequency_modulator)
         self._keys_to_knobs = self._get_keys_to_knobs(self._knobs)
 
     def _get_keys_to_knobs(self, knobs: List[AbstractKeyboardKnob]) -> Dict[
@@ -229,3 +317,14 @@ class KeyboardController(BaseController):
 
     def run(self):
         wrapper(self._run_with_screen)
+
+    def __enter__(self) -> 'BaseController':
+        self._pwm.start()
+        self._interrupter.start()
+        self._pwm_frequency_modulator.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._pwm_frequency_modulator.stop()
+        self._interrupter.stop()
+        self._pwm.stop()

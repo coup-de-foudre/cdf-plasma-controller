@@ -22,12 +22,9 @@
 
 import argparse
 import sys
-from typing import List
 
 from controller.keyboard_controller import KeyboardController, \
-    ProportionalTickKnob, SimpleKnob, AbstractKeyboardKnob
-from interrupter.base_interrupter import BaseInterrupter
-from modulator.base_modulator import BaseModulator
+    keyboard_control_knobs
 from modulator.callback_modulator import CallbackModulator
 from pwm.mock_pwm import MockPWM
 from pwm.pi_pwm import PiHardwarePWM
@@ -111,85 +108,6 @@ def parse_arguments():
     return args
 
 
-def keyboard_control_knobs(interrupter: BaseInterrupter,
-                           pwm_frequency_modulator: BaseModulator,
-                           ) -> List[AbstractKeyboardKnob]:
-
-    pwm = interrupter.pwm
-
-    interrupter_frequency_knob = ProportionalTickKnob(
-        "Interrupter frequency (Hz)",
-        lambda f: interrupter.set_frequency(f),
-        "←",
-        "→",
-        0.0,
-        float("inf"),
-        interrupter.frequency,
-    )
-
-    interrupter_duty_cycle_knob = SimpleKnob(
-        "Interrupter duty cycle",
-        lambda d: interrupter.set_duty_cycle(d),
-        '{',
-        '}',
-        0.0,
-        1.0,
-        interrupter.duty_cycle,
-    )
-
-    pwm_frequency_knob = ProportionalTickKnob(
-        "PWM frequency (Hz)",
-        lambda c: pwm_frequency_modulator.set_center(c),
-        "↓",
-        "↑",
-        0.0,
-        float("inf"),
-        pwm_frequency_modulator.center,
-    )
-
-    pwm_duty_cycle_knob = SimpleKnob(
-        "PWM duty cycle",
-        lambda d: pwm.set_duty_cycle(d),
-        '<',
-        '>',
-        0.0,
-        1.0,
-        pwm.duty_cycle,
-    )
-
-    pwm_frequency_modulation_freq_knob = SimpleKnob(
-        "PWM FM frequency (Hz)",
-        lambda f: pwm_frequency_modulator.set_frequency(f),
-        "_",
-        "+",
-        min_value=0.0,
-        max_value=20.0,
-        initial_value=pwm_frequency_modulator.frequency,
-        num_ticks=200,
-    )
-
-    pwm_frequency_modulation_spread_knob = ProportionalTickKnob(
-        "PWM FM spread (Hz)",
-        lambda i: pwm_frequency_modulator.set_spread(i),
-        "(",
-        ")",
-        min_value=0.0,
-        max_value=float("inf"),
-        initial_value=pwm_frequency_modulator.spread,
-    )
-
-    knobs = [
-        interrupter_frequency_knob,
-        pwm_frequency_knob,
-        interrupter_duty_cycle_knob,
-        pwm_duty_cycle_knob,
-        pwm_frequency_modulation_freq_knob,
-        pwm_frequency_modulation_spread_knob,
-    ]
-
-    return knobs
-
-
 def main():
     sys.setswitchinterval(5e-4)
     args = parse_arguments()
@@ -214,22 +132,12 @@ def main():
         update_frequency=40,
     )
 
-    control_knobs = keyboard_control_knobs(interrupter, pwm_frequency_modulator)
-    controller = KeyboardController(control_knobs)
+    controller = KeyboardController(pwm, pwm_frequency_modulator, interrupter)
 
     # Try-catch-finally is a workaround for issue here:
     # https://www.raspberrypi.org/forums/viewtopic.php?t=66445&start=175#p1156097
-    try:
-        pwm.start()
-        interrupter.start()
-        pwm_frequency_modulator.start()
-        controller.run()
-    except AttributeError:
-        pass
-    finally:
-        pwm_frequency_modulator.stop()
-        interrupter.stop()
-        pwm.stop()
+    with controller as c:
+        c.run()
 
 
 if __name__ == '__main__':
