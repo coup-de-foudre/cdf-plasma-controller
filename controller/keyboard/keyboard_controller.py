@@ -19,142 +19,18 @@
 # <http://www.gnu.org/licenses/>.
 
 import logging
-from abc import ABC, abstractmethod
-from curses import (wrapper, KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN,
-                    flash as flash_screen, A_STANDOUT)
-from math import log10
-from numbers import Real
+from curses import (wrapper, flash as flash_screen, A_STANDOUT)
 from typing import Callable, List, Dict
 
+from controller.base_controller import BaseController
+from controller.keyboard.converters import curses_int_to_unicode
+from controller.keyboard.keyboard_knob import KeyboardException, \
+    AbstractKeyboardKnob, SimpleKnob, \
+    ProportionalTickKnob
 from interrupter.base_interrupter import BaseInterrupter
 from modulator.base_modulator import BaseModulator
-from pwm.base_pwm import BasePWM
-from .base_controller import BaseController, ControllerException
 
 logger = logging.getLogger(__name__)
-
-
-class KeyboardException(ControllerException):
-    pass
-
-
-_CURSES_INT_TO_UNICODE = {
-    KEY_LEFT: "←",
-    KEY_UP: "↑",
-    KEY_RIGHT: "→",
-    KEY_DOWN: "↓",
-}
-
-_UNICODE_TO_CURSES_INT = {v: k for k, v in _CURSES_INT_TO_UNICODE.items()}
-
-
-def curses_int_to_unicode(curses_int: int) -> str:
-    """Convert a curses int to an interpretable character"""
-    return _CURSES_INT_TO_UNICODE.get(curses_int, chr(curses_int))
-
-
-def unicode_to_curses_int(unicode_chr: str) -> int:
-    if len(unicode_chr) != 1:
-        raise KeyboardException("Cannot convert {} to curses integer: "
-                                "length must equal one".format(unicode_chr))
-    return _UNICODE_TO_CURSES_INT.get(unicode_chr, ord(unicode_chr))
-
-
-class AbstractKeyboardKnob(ABC):
-    def __init__(self,
-                 name: str,
-                 callback: Callable[[Real], None],
-                 decrement_key: str,
-                 increment_key: str,
-                 min_value: Real,
-                 max_value: Real,
-                 initial_value: Real):
-        """Get a keyboard knob
-
-        :param name: Name of the knob to display
-        :param callback: Set the value on the knob
-        :param decrement_key: Unicode character to decrement knob
-        :param increment_key: Unicode character to increment knob
-        :param min_value: Minimum knob value
-        :param max_value: Maximum knob value
-        :param initial_value: The start value for the knob
-        """
-        self._name = name
-        self._setter = callback
-        self._decrement_int = unicode_to_curses_int(decrement_key)
-        self._increment_int = unicode_to_curses_int(increment_key)
-        self._min_value = min_value
-        self._max_value = max_value
-        self._validate_value(min_value, max_value, initial_value)
-        self._value = initial_value
-
-    @staticmethod
-    def _validate_value(min_value, max_value, value: Real) -> None:
-        if value < min_value or value > max_value:
-            raise KeyboardException(
-                "Value must be between %d and %d, not %d",
-                min_value, max_value, value)
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def value(self) -> Real:
-        return self._value
-
-    @property
-    def decrement_int(self) -> int:
-        return self._decrement_int
-
-    @property
-    def increment_int(self) -> int:
-        return self._increment_int
-
-    def decrement(self) -> None:
-        self._value = max(self._value - self.tick_size, self._min_value)
-        self._setter(self._value)
-
-    def increment(self) -> None:
-        self._value = min(self._value + self.tick_size, self._max_value)
-        self._setter(self._value)
-
-    @property
-    @abstractmethod
-    def tick_size(self) -> Real:
-        raise NotImplementedError
-
-
-class SimpleKnob(AbstractKeyboardKnob):
-    DEFAULT_NUM_TICKS = 100
-
-    def __init__(self,
-                 name: str,
-                 callback: Callable[[Real], None],
-                 decrement_key: str,
-                 increment_key: str,
-                 min_value: Real,
-                 max_value: Real,
-                 initial_value: Real,
-                 *,
-                 num_ticks: int=DEFAULT_NUM_TICKS):
-
-        super().__init__(name, callback, decrement_key, increment_key,
-                         min_value, max_value, initial_value)
-        self.num_ticks = num_ticks
-
-    @property
-    def tick_size(self) -> Real:
-        return (self._max_value - self._min_value) / self.num_ticks
-
-
-class ProportionalTickKnob(AbstractKeyboardKnob):
-    @property
-    def tick_size(self) -> Real:
-        if self._value <= 0.0:
-            return 0.0001
-        else:
-            return 10.0 ** (int(log10(self._value / 2.0))) / 100.0
 
 
 def keyboard_control_knobs(interrupter: BaseInterrupter,
@@ -244,10 +120,9 @@ class KeyboardController(BaseController):
     before calling this function
     """
     def __init__(self,
-                 pwm: BasePWM,
                  pwm_frequency_modulator: BaseModulator,
                  interrupter: BaseInterrupter):
-        self._pwm = pwm
+        self._pwm = interrupter.pwm
         self._pwm_frequency_modulator = pwm_frequency_modulator
         self._interrupter = interrupter
         self._screen = None

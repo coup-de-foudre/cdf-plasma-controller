@@ -23,8 +23,7 @@
 import argparse
 import sys
 
-from controller.keyboard_controller import KeyboardController, \
-    keyboard_control_knobs
+from controller.keyboard.keyboard_controller import KeyboardController
 from modulator.callback_modulator import CallbackModulator
 from pwm.mock_pwm import MockPWM
 from pwm.pi_pwm import PiHardwarePWM
@@ -132,7 +131,7 @@ def main():
         update_frequency=40,
     )
 
-    controller = KeyboardController(pwm, pwm_frequency_modulator, interrupter)
+    controller = KeyboardController(pwm_frequency_modulator, interrupter)
 
     # Try-catch-finally is a workaround for issue here:
     # https://www.raspberrypi.org/forums/viewtopic.php?t=66445&start=175#p1156097
