@@ -46,19 +46,14 @@ The following OSC addresses are defined:
         Interrupter duty cycle in Hz.
 
 """
-import argparse
 import logging
-import sys
 
 from pythonosc import osc_server
 from pythonosc.dispatcher import Dispatcher
 
 from controller.base_controller import BaseController
-from interrupter.simple_interrupter import SimpleInterrupter
-from pwm.mock_pwm import MockPWM
-from pwm.pi_pwm import PiHardwarePWM
-
-logger = logging.getLogger(__name__)
+from interrupter.base_interrupter import BaseInterrupter
+from pwm.base_pwm import BasePWM
 
 
 class OSCController(BaseController):
@@ -76,41 +71,25 @@ class OSCController(BaseController):
 
     def __init__(self,
                  osc_bind: str,
-                 pwm_pin: int,
-                 pwm_host: str,
-                 pwm_frequency: float,
-                 pwm_duty_cycle: float,
-                 interrupter_frequency: float,
-                 interrupter_duty_cycle: float,
-                 mock: bool=False):
+                 pwm: BasePWM,
+                 interrupter: BaseInterrupter,
+                 ):
         """
         :param osc_bind: The ip:port for the OSC server to listen on
-        :param pwm_pin: GPIO pin number
-        :param pwm_host: Hostname of the RPi
-        :param pwm_frequency: Frequency of PWM (Hz)
-        :param pwm_duty_cycle: Duty cycle of PWM (Hz)
-        :param interrupter_frequency: Frequency of interrupter (Hz)
-        :param interrupter_duty_cycle: Duty cycle of interrupter in [0,1]
-        :param mock: Whether to use a mock PWM for testing.
+        :param pwm: The PWM to use
+        :param interrupter: The interrupter to use
         """
-        logging.debug(f"{locals()}")
+        self.logger = logging.getLogger(__name__)
+        self.logger.debug("%s", locals())
 
         self.osc_bind_host, self.osc_bind_port = osc_bind.split(':')
+        self._pwm = pwm
+        self._interrupter = interrupter
 
-        if mock:
-            self._pwm = MockPWM()
-        else:
-            self._pwm = PiHardwarePWM(pwm_pin, pwm_host)
-
-        self._pwm_center_frequency = pwm_frequency
+        self._pwm_center_frequency = pwm.frequency
         self._pwm_offset_factor = 0.0
         self._set_pwm_frequency_with_offset()
-        self._pwm.duty_cycle = pwm_duty_cycle
-
-        self._interrupter = SimpleInterrupter(
-            self._pwm,
-            interrupter_frequency,
-            interrupter_duty_cycle)
+        self._pwm.duty_cycle = pwm.duty_cycle
 
     def _set_pwm_frequency_with_offset(self):
         self._pwm.frequency = self._pwm_center_frequency * (
@@ -127,7 +106,7 @@ class OSCController(BaseController):
         :param offset_factor: Optional new offset factor. By default, it's
              reset to zero.
         """
-        logger.debug(f"{locals()}")
+        self.logger.debug("%s", locals())
         del osc_path  # unused
         self._pwm_center_frequency = center_frequency
         self._pwm_offset_factor = offset_factor
@@ -140,7 +119,7 @@ class OSCController(BaseController):
         :param offset_factor: A number between -1 and 1. The output
             frequency is center_frequency * (1+offset_factor).
         """
-        logger.debug(f"{locals()}")
+        self.logger.debug("%s", locals())
         del osc_path  # unused
         self._pwm_offset_factor = offset_factor
         self._set_pwm_frequency_with_offset()
@@ -151,7 +130,7 @@ class OSCController(BaseController):
         :param osc_path: OSC path that this is called with
         :param duty_cycle: A number between -1 and 1.
         """
-        logger.debug(f"{locals()}")
+        self.logger.debug("%s", locals())
         del osc_path  # unused
         self._pwm.duty_cycle = duty_cycle
 
@@ -161,7 +140,7 @@ class OSCController(BaseController):
         :param osc_path: OSC path that this is called with
         :param frequency: The interrupter frequency in Hz
         """
-        logger.debug(f"{locals()}")
+        self.logger.debug("%s", locals())
         del osc_path  # unused
         self._interrupter.frequency = frequency
 
@@ -171,23 +150,32 @@ class OSCController(BaseController):
         :param osc_path: OSC path that this is called with
         :param duty_cycle: A number in [0,1]. If set to 1, no interruption.
         """
-        logger.debug(f"{locals()}")
+        self.logger.debug("%s", locals())
         del osc_path  # unused
         self._interrupter.duty_cycle = duty_cycle
 
     def start(self):
         """Start the PWM"""
-        logger.debug("Starting")
+        self.logger.debug("Starting")
         self._pwm.start()
         self._interrupter.start()
 
     def shutdown(self):
         """Gracefully stop the pwm"""
-        logger.debug("Shutting down")
+        self.logger.debug("Shutting down")
         self._pwm.stop()
         self._interrupter.stop()
 
+    def run(self):
+        """Start the controller and block thread execution"""
+        self.logger.debug("Running")
+        dispatcher = self._get_dispatcher()
+        server = osc_server.ThreadingOSCUDPServer(
+            (self.osc_bind_host, int(self.osc_bind_port)), dispatcher)
+        server.serve_forever()
+
     def _get_dispatcher(self) -> Dispatcher:
+        self.logger.debug("Creating dispatcher")
         dispatcher = Dispatcher()
         dispatcher.map("/pwm/center-frequency",
                        self.set_pwm_center_frequency)
@@ -201,108 +189,11 @@ class OSCController(BaseController):
                        self.set_interrupter_duty_cycle)
         return dispatcher
 
-    def run(self):
-        dispatcher = self._get_dispatcher()
-        server = osc_server.ThreadingOSCUDPServer(
-            (self.osc_bind_host, int(self.osc_bind_port)), dispatcher)
-        server.serve_forever()
-
     def __enter__(self) -> BaseController:
+        self.logger.debug("Entering 'with' statement")
         self.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.logger.debug("%s", locals())
         self.shutdown()
-
-
-def parse_arguments():
-    parser = argparse.ArgumentParser(description=__doc__)
-
-    parser.add_argument("--osc-bind",
-                        default="0.0.0.0:5005",
-                        help="The ip:port for the OSC server to listen on")
-
-    parser.add_argument(
-        "--mock",
-        action="store_true",
-        help="use mock PWM to test controller without a Pi")
-
-    parser.add_argument(
-        "--host",
-        type=str,
-        default=None,
-        help="RPi host (None=local daemon)",
-    )
-
-    parser.add_argument(
-        '--pin',
-        type=int,
-        choices=(12, 13, 18, 19),
-        default=18,
-        help="GPIO pin to run hardware PWM (18)",
-    )
-
-    parser.add_argument(
-        '-D',
-        dest='interrupter_duty_cycle',
-        type=float,
-        default=1.0,
-        help="duty cycle of the interrupter (default == 1.0 == no interrupter)",
-    )
-
-    parser.add_argument(
-        '-F',
-        dest='interrupter_frequency',
-        type=float,
-        default=100.0,
-        help="frequency (Hz) of the interrupter (100.0)",
-    )
-
-    parser.add_argument(
-        '-d',
-        dest='pwm_duty_cycle',
-        type=float,
-        default=0.5,
-        help="duty cycle of the PWM (0.5)",
-    )
-
-    parser.add_argument(
-        '-f',
-        dest='pwm_frequency',
-        type=float,
-        help="frequency of the PWM",
-        required=True
-    )
-
-    parser.add_argument('-v', '--verbose',
-                        action="store_true",
-                        help="Enable verbose logging")
-
-    args = parser.parse_args()
-
-    return args
-
-
-def set_up_logging(level=logging.DEBUG):
-    logging.basicConfig(level=level)
-
-
-def main():
-    set_up_logging()
-    sys.setswitchinterval(5e-4)
-    args = parse_arguments()
-
-    with OSCController(
-            args.osc_bind,
-            args.pin,
-            args.host,
-            args.pwm_frequency,
-            args.pwm_duty_cycle,
-            args.interrupter_frequency,
-            args.interrupter_duty_cycle,
-            args.mock) as controller:
-        controller.run()
-
-
-if __name__ == "__main__":
-    sys.exit(main())

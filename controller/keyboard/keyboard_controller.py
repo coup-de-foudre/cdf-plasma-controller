@@ -22,13 +22,13 @@ import logging
 from curses import (wrapper, flash as flash_screen, A_STANDOUT)
 from typing import Callable, List, Dict
 
-from controller.base_controller import BaseController
-from controller.keyboard.converters import curses_int_to_unicode
-from controller.keyboard.keyboard_knob import KeyboardException, \
-    AbstractKeyboardKnob, SimpleKnob, \
-    ProportionalTickKnob
 from interrupter.base_interrupter import BaseInterrupter
 from modulator.base_modulator import BaseModulator
+
+from ..base_controller import BaseController
+from .converters import curses_int_to_unicode
+from .keyboard_knob import KeyboardException, AbstractKeyboardKnob, \
+    SimpleKnob, ProportionalTickKnob
 
 logger = logging.getLogger(__name__)
 
@@ -127,8 +127,8 @@ class KeyboardController(BaseController):
         self._interrupter = interrupter
         self._screen = None
         self._break_int = ord('q')
-        self._knobs = keyboard_control_knobs(
-            interrupter, pwm_frequency_modulator)
+        self._knobs = keyboard_control_knobs(interrupter,
+                                             pwm_frequency_modulator)
         self._keys_to_knobs = self._get_keys_to_knobs(self._knobs)
 
     def _get_keys_to_knobs(self, knobs: List[AbstractKeyboardKnob]) -> Dict[
