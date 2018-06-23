@@ -161,7 +161,7 @@ the server is receiving messages as follows:
 ./utils/osc_msg.py /pwm/center-frequency 10001
 
 # On another machine on the local network
-./utils/osc_msg.py --server 192.168.2.247 /pwm/center-frequency 10001
+./utils/osc_msg.py --server 192.168.2.247:5005 /pwm/center-frequency 10001
 ```
 
 If it's successful, you should see output that looks like the following:
