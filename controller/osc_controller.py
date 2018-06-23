@@ -98,7 +98,7 @@ class OSCController(BaseController):
     def set_pwm_center_frequency(self,
                                  osc_path,
                                  center_frequency,
-                                 offset_factor: float=0.0):
+                                 offset_factor: float=None):
         """Set the new center frequency
 
         :param osc_path: OSC path that this is called with
@@ -108,6 +108,8 @@ class OSCController(BaseController):
         """
         self.logger.debug("%s", locals())
         del osc_path  # unused
+        if offset_factor is None:
+            offset_factor = 0.0
         self._pwm_center_frequency = center_frequency
         self._pwm_offset_factor = offset_factor
         self._set_pwm_frequency_with_offset()
