@@ -21,22 +21,31 @@
 # <http://www.gnu.org/licenses/>.
 
 import argparse
+import logging
 import sys
-from typing import List
 
-from controller.keyboard_controller import KeyboardController, \
-    ProportionalTickKnob, SimpleKnob, AbstractKeyboardKnob
-from interrupter.base_interrupter import BaseInterrupter
-from modulator.base_modulator import BaseModulator
+from controller.base_controller import BaseController
+from controller.keyboard.keyboard_controller import KeyboardController
+from controller.osc_controller import OSCController
+from interrupter.simple_interrupter import SimpleInterrupter
 from modulator.callback_modulator import CallbackModulator
 from pwm.mock_pwm import MockPWM
 from pwm.pi_pwm import PiHardwarePWM
-from interrupter.simple_interrupter import SimpleInterrupter
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run the CdF Plasma Controller with a keyboard controller")
+        description="Run the CdF Plasma Controller")
+
+    parser.add_argument("--controller-type",
+                        type=str,
+                        default="keyboard",
+                        choices={"keyboard", "OSC"},
+                        help="Choose the control method (default='keyboard')")
+
+    parser.add_argument("--osc-bind",
+                        default="0.0.0.0:5005",
+                        help="The ip:port for the OSC server to listen on")
 
     parser.add_argument(
         "--mock",
@@ -98,6 +107,10 @@ def parse_arguments():
         help="duty cycle of the PWM (0.5)",
     )
 
+    parser.add_argument('-v', '--verbose',
+                        action="store_true",
+                        help="Enable verbose logging")
+
     parser.add_argument(
         '-f',
         dest='pwm_frequency',
@@ -106,94 +119,18 @@ def parse_arguments():
         required=True
     )
 
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args()
 
 
-def keyboard_control_knobs(interrupter: BaseInterrupter,
-                           pwm_frequency_modulator: BaseModulator,
-                           ) -> List[AbstractKeyboardKnob]:
-
-    pwm = interrupter.pwm
-
-    interrupter_frequency_knob = ProportionalTickKnob(
-        "Interrupter frequency (Hz)",
-        lambda f: interrupter.set_frequency(f),
-        "←",
-        "→",
-        0.0,
-        float("inf"),
-        interrupter.frequency,
-    )
-
-    interrupter_duty_cycle_knob = SimpleKnob(
-        "Interrupter duty cycle",
-        lambda d: interrupter.set_duty_cycle(d),
-        '{',
-        '}',
-        0.0,
-        1.0,
-        interrupter.duty_cycle,
-    )
-
-    pwm_frequency_knob = ProportionalTickKnob(
-        "PWM frequency (Hz)",
-        lambda c: pwm_frequency_modulator.set_center(c),
-        "↓",
-        "↑",
-        0.0,
-        float("inf"),
-        pwm_frequency_modulator.center,
-    )
-
-    pwm_duty_cycle_knob = SimpleKnob(
-        "PWM duty cycle",
-        lambda d: pwm.set_duty_cycle(d),
-        '<',
-        '>',
-        0.0,
-        1.0,
-        pwm.duty_cycle,
-    )
-
-    pwm_frequency_modulation_freq_knob = SimpleKnob(
-        "PWM FM frequency (Hz)",
-        lambda f: pwm_frequency_modulator.set_frequency(f),
-        "_",
-        "+",
-        min_value=0.0,
-        max_value=20.0,
-        initial_value=pwm_frequency_modulator.frequency,
-        num_ticks=200,
-    )
-
-    pwm_frequency_modulation_spread_knob = ProportionalTickKnob(
-        "PWM FM spread (Hz)",
-        lambda i: pwm_frequency_modulator.set_spread(i),
-        "(",
-        ")",
-        min_value=0.0,
-        max_value=float("inf"),
-        initial_value=pwm_frequency_modulator.spread,
-    )
-
-    knobs = [
-        interrupter_frequency_knob,
-        pwm_frequency_knob,
-        interrupter_duty_cycle_knob,
-        pwm_duty_cycle_knob,
-        pwm_frequency_modulation_freq_knob,
-        pwm_frequency_modulation_spread_knob,
-    ]
-
-    return knobs
+def set_up_logging(verbose=False):
+    if verbose:
+        level = logging.DEBUG
+    else:
+        level = logging.WARN
+    logging.basicConfig(level=level)
 
 
-def main():
-    sys.setswitchinterval(5e-4)
-    args = parse_arguments()
-
+def get_controller(args: argparse.Namespace) -> BaseController:
     if args.mock:
         pwm = MockPWM()
     else:
@@ -206,7 +143,7 @@ def main():
                                     args.interrupter_frequency,
                                     args.interrupter_duty_cycle)
 
-    pwm_frequency_modulator = CallbackModulator(
+    modulator = CallbackModulator(
         lambda f: pwm.set_frequency(f),
         frequency=args.modulator_frequency,
         spread=args.modulator_spread,
@@ -214,22 +151,25 @@ def main():
         update_frequency=40,
     )
 
-    control_knobs = keyboard_control_knobs(interrupter, pwm_frequency_modulator)
-    controller = KeyboardController(control_knobs)
+    if args.controller_type == "keyboard":
+        controller = KeyboardController(modulator, interrupter)
+    elif args.controller_type == "OSC":
+        controller = OSCController(args.osc_bind, pwm, interrupter)
+    else:
+        raise ValueError("Unknown controller type %s", args.controller_type)
 
-    # Try-catch-finally is a workaround for issue here:
-    # https://www.raspberrypi.org/forums/viewtopic.php?t=66445&start=175#p1156097
-    try:
-        pwm.start()
-        interrupter.start()
-        pwm_frequency_modulator.start()
-        controller.run()
-    except AttributeError:
-        pass
-    finally:
-        pwm_frequency_modulator.stop()
-        interrupter.stop()
-        pwm.stop()
+    return controller
+
+
+def main():
+    sys.setswitchinterval(5e-4)
+    args = parse_arguments()
+    set_up_logging(args.verbose)
+    logger = logging.getLogger(__name__)
+    logger.debug("Arguments: %s", args)
+
+    with get_controller(args) as c:
+        c.run()
 
 
 if __name__ == '__main__':

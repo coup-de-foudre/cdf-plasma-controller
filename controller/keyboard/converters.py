@@ -18,5 +18,25 @@
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-pigpio
--e vendor/python-osc
+from _curses import KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN
+
+
+def curses_int_to_unicode(curses_int: int) -> str:
+    """Convert a curses int to an interpretable character"""
+    return _CURSES_INT_TO_UNICODE.get(curses_int, chr(curses_int))
+
+
+_CURSES_INT_TO_UNICODE = {
+    KEY_LEFT: "←",
+    KEY_UP: "↑",
+    KEY_RIGHT: "→",
+    KEY_DOWN: "↓",
+}
+_UNICODE_TO_CURSES_INT = {v: k for k, v in _CURSES_INT_TO_UNICODE.items()}
+
+
+def unicode_to_curses_int(unicode_chr: str) -> int:
+    if len(unicode_chr) != 1:
+        raise ValueError("Cannot convert {} to curses integer: "
+                         "length must equal one".format(unicode_chr))
+    return _UNICODE_TO_CURSES_INT.get(unicode_chr, ord(unicode_chr))

@@ -18,43 +18,17 @@
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-import logging
 from abc import ABC, abstractmethod
-from curses import (wrapper, KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN,
-                    flash as flash_screen, A_STANDOUT)
 from math import log10
 from numbers import Real
-from typing import Callable, List, Dict
+from typing import Callable
 
-from .base_controller import BaseController, ControllerException
-
-logger = logging.getLogger(__name__)
+from controller.base_controller import ControllerException
+from controller.keyboard.converters import unicode_to_curses_int
 
 
 class KeyboardException(ControllerException):
     pass
-
-
-_CURSES_INT_TO_UNICODE = {
-    KEY_LEFT: "←",
-    KEY_UP: "↑",
-    KEY_RIGHT: "→",
-    KEY_DOWN: "↓",
-}
-
-_UNICODE_TO_CURSES_INT = {v: k for k, v in _CURSES_INT_TO_UNICODE.items()}
-
-
-def curses_int_to_unicode(curses_int: int) -> str:
-    """Convert a curses int to an interpretable character"""
-    return _CURSES_INT_TO_UNICODE.get(curses_int, chr(curses_int))
-
-
-def unicode_to_curses_int(unicode_chr: str) -> int:
-    if len(unicode_chr) != 1:
-        raise KeyboardException("Cannot convert {} to curses integer: "
-                                "length must equal one".format(unicode_chr))
-    return _UNICODE_TO_CURSES_INT.get(unicode_chr, ord(unicode_chr))
 
 
 class AbstractKeyboardKnob(ABC):
@@ -152,80 +126,3 @@ class ProportionalTickKnob(AbstractKeyboardKnob):
             return 0.0001
         else:
             return 10.0 ** (int(log10(self._value / 2.0))) / 100.0
-
-
-class KeyboardController(BaseController):
-
-    """Control a set of knobs with a keyboard.
-
-    Note that whatever the knobs are controlling should be "running"
-    before calling this function
-    """
-
-    def __init__(self, knobs: List[AbstractKeyboardKnob]):
-        self._knobs = knobs
-        self._screen = None
-        self._break_int = ord('q')
-        self._keys_to_knobs = self._get_keys_to_knobs(self._knobs)
-
-    def _get_keys_to_knobs(self, knobs: List[AbstractKeyboardKnob]) -> Dict[
-            int, Callable[[], None]]:
-        keys_to_knobs = {}
-        for knob in knobs:
-            self._add_knob_to_dict(keys_to_knobs,
-                                   knob.increment_int,
-                                   knob.increment)
-            self._add_knob_to_dict(keys_to_knobs,
-                                   knob.decrement_int,
-                                   knob.decrement)
-        return keys_to_knobs
-
-    @staticmethod
-    def _add_knob_to_dict(keys_to_knobs: Dict[int, Callable[[], None]],
-                          key_int: int,
-                          control: Callable[[], None]):
-        if key_int in keys_to_knobs:
-            raise KeyboardException("Key already used: {}"
-                                    "".format(curses_int_to_unicode(key_int)))
-        keys_to_knobs[key_int] = control
-
-    def _run_with_screen(self, screen) -> None:
-        """
-        :param screen: The standard curses window object to run in.
-        """
-        self._screen = screen
-        while True:
-            self._draw_screen()
-            c = self._screen.getch()
-            if c == self._break_int:
-                break
-            self._keys_to_knobs.get(c, flash_screen)()
-
-    def _draw_screen(self):
-        self._screen.clear()
-        self._render_top_line()
-        self._render_knobs(start_line=2)
-        self._screen.refresh()
-
-    def _render_top_line(self):
-        _, width = self._screen.getmaxyx()
-        message = "To quit, type '{}'".format(
-            curses_int_to_unicode(self._break_int))
-        message += " " * (width - len(message))
-        self._screen.addstr(0, 0, message, A_STANDOUT)
-
-    def _render_knobs(self, start_line):
-        for knob_num, knob in enumerate(self._knobs):
-            self._render_knob(knob, window_line=knob_num + start_line)
-
-    def _render_knob(self, knob: AbstractKeyboardKnob, window_line: int):
-        details = "{:30.29} ({}=dec, {}=inc): {:4.2f}".format(
-            knob.name,
-            curses_int_to_unicode(knob.decrement_int),
-            curses_int_to_unicode(knob.increment_int),
-            knob.value,
-        )
-        self._screen.addstr(window_line, 0, details)
-
-    def run(self):
-        wrapper(self._run_with_screen)

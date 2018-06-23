@@ -1,6 +1,7 @@
 # CdF Plasma Controller
 
-Raspberry Pi-based PWM controller for plasma tubes.
+Raspberry Pi-based PWM controller for plasma tubes that support
+the Open Sound Control (OSC) protocol.
 
 
 ## Installation
@@ -91,32 +92,111 @@ You should now be able to connect to a remote Raspberry Pi running the
 
 ## Running
 
-For the full range of options, use `./plasma_controller.py -h`.
+There are two ways to control the PWM, either via the keyboard or
+using the Open Sound Control protocol. The next two sections
+provide examples of using it both ways.
+
+For the full range of options, see `./plasma_controller.py -h`.
 
 
-### Examples
+### Using the keyboard
 
-1. To run an uninterrupted PWM locally at 1000 Hz: 
+The simplest way to use this package is via the keyboard controller,
+which allows you to change the parameters using key strokes. If you
+have this package installed on a Raspberry Pi following the directions
+above, try running the PWM with an initial frequency of 10000 Hz:
 
+```bash
+./plasma_controller.py -f 10000.0
+```
+
+You'll see a screen that looks like this:
+
+![Keyboard](./doc/keyboard.png)
+
+Use the specified keys to increment or decrement the parameter values.
+
+
+### Using Open Sound Control (OSC)
+
+This package also allows control of the PWM via the Open Sound Control (OSC)
+protocol. 
+
+To enable OSC, setting the `--controller-type=OSC` flag on the command line.
+This starts a OSC server on UDP port `5005` with the following endpoints:
+
+  - `/pwm/center-frequency <float>`
+    PWM center frequency in Hz. Optionally accepts an additional
+    float which specifies the offset factor; otherwise, the
+    offset factor is reset to zero.
+
+  - `/pwm/frequency-offset-factor <float>`
+    Offset factor for the center frequency. Should be between [-1, 1].
+    The true frequency is given by
+
+    ```bash
+    center-frequency * (1 + offset-factor)
     ```
-    ./plasma_controller.py -f 1000.0
-    ```
 
-1. Run over a network on pin 12 at 15kHz.
+    This simplifies implementing small changes of the input frequency around a 
+    fixed center frequency.
 
-    ```
-    ./plasma_controller.py --pin 12 --host 192.168.2.247 -f 15000
-    ```
+  - `/pwm/duty-cycle <float>`
+    Set the PWM duty cycle. Generally, we recommend 0.5.
+
+  - `/interrupter/frequency <float>`
+    Interrupter frequency in Hz.
+
+  - `/interrupter/duty-cycle <float>`
+    Interrupter duty cycle in Hz.
+
+You can test OSC using the included `osc_msg.py` script. You can test that
+the server is receiving messages as follows:
+
+```bash
+# On RPi on localhost, local network address 192.168.2.247
+./plasma_controller.py --controller-type OSC --verbose -f 10000
+
+# In a separate terminal screen same RPi
+./utils/osc_msg.py /pwm/center-frequency 10001
+
+# On another machine on the local network
+./utils/osc_msg.py --server 192.168.2.247 /pwm/center-frequency 10001
+```
+
+If it's successful, you should see output that looks like the following:
+
+```
+DEBUG:controller.osc_controller:{'offset_factor': None, 'center_frequency': 10001, 'osc_path': '/pwm/center-frequency', ...}
+```
+
+> **Note** The server only supports OSC over UDP. If you have difficulty 
+> receiving messages, make sure that your client is configured to use UDP, not
+> TCP.
+
+
+### Additional Examples
 
 1. Run in interrupted mode, with the interrupter running at 100Hz and 30% duty 
 cycle.
 
-    ```
+    ```bash
     ./plasma_controller.py -F 100 -D 0.3 -f 30000
     ```
+    > **NOTE** Running interruption over a network is not recommended, since 
+    > network latency will significantly affect the interruption rate.
 
-> **NOTE** Running interruption over a network is not recommended, since network
-> latency will significantly affect the interruption rate.
+1. Control the RPi at address 192.168.2.247 on pin 12 at 15kHz.
+
+    ```bash
+    ./plasma_controller.py --pin 12 --host 192.168.2.247 -f 15000
+    ```
+
+1. Start an OSC controller with initial frequency of 83.3MHz.
+
+    ```bash
+    ./plasma_controller.py --controller-type OSC -f 83300000
+    ```
 
 
 ## Copyright and License
