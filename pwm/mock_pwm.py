@@ -19,6 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 from numbers import Real
+import logging
 
 from .base_pwm import BasePWM
 
@@ -26,33 +27,41 @@ from .base_pwm import BasePWM
 class MockPWM(BasePWM):
 
     def __init__(self):
-
+        self._logger = logging.getLogger(__name__)
+        self._log = self._logger.info
         self._duty_cycle = 0.5
         self._frequency = 1.0
         self._is_stopped = False
 
     @property
     def duty_cycle(self) -> Real:
+        self._log("%s", locals())
         return self._duty_cycle
 
     @duty_cycle.setter
     def duty_cycle(self, value: Real):
+        self._log("%s", locals())
         self._duty_cycle = value
 
     @property
     def frequency(self) -> Real:
+        self._log("%s", locals())
         return self._frequency
 
     @frequency.setter
     def frequency(self, value: Real):
+        self._log("%s", locals())
         self._frequency = value
 
     @property
     def is_stopped(self) -> bool:
+        self._log("%s", locals())
         return self._is_stopped
 
     def start(self) -> None:
+        self._log("%s", locals())
         self._is_stopped = False
 
     def stop(self) -> None:
+        self._log("%s", locals())
         self._is_stopped = True
