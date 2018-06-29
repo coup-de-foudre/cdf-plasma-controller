@@ -153,7 +153,7 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
     Set the PWM duty cycle. Settings other than 0.5 (the default) create a DC 
     offset in the output, which may damage some circuit configurations. 
 
-  -  `/pwm/fm/start`
+  - `/pwm/fm/start`
     Start FM modulation.
 
   - `/pwm/fm/stop`
@@ -164,6 +164,12 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
 
   - `/pwm/fm/frequency <float>`
     Set the PWM FM frequency in Hz.
+
+  - `/interrupter/start`
+    Start the interrupter.
+
+  - `/interrupter/stop`
+    Stop the interrupter.
   
   - `/interrupter/frequency <float>`
     Interrupter frequency in Hz.

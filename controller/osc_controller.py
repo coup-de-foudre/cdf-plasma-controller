@@ -62,6 +62,12 @@ The following OSC addresses are defined:
     /pwm/fm/frequency <float>
         Set the PWM FM frequency in Hz.
 
+    /interrupter/start
+        Start the interrupter.
+
+    /interrupter/stop
+        Stop the interrupter.
+
     /interrupter/frequency <float>
         Interrupter frequency in Hz.
 
@@ -77,7 +83,6 @@ from pythonosc.dispatcher import Dispatcher
 from controller.base_controller import BaseController
 from interrupter.base_interrupter import BaseInterrupter
 from modulator.base_modulator import BaseModulator
-from pwm.base_pwm import BasePWM
 
 
 class OSCController(BaseController):
@@ -220,6 +225,18 @@ class OSCController(BaseController):
         del osc_path  # unused
         self._pwm_frequency_modulator.set_frequency(frequency)
 
+    def set_interrupter_start(self, osc_path: str) -> None:
+        """Start the interrupter"""
+        self.logger.debug("%s", locals())
+        del osc_path  # unused
+        self._interrupter.start()
+
+    def set_interrupter_stop(self, osc_path: str) -> None:
+        """Stop the interrupter"""
+        self.logger.debug("%s", locals())
+        del osc_path  # unused
+        self._interrupter.start()
+
     def set_interrupter_frequency(self, osc_path: str,
                                   frequency: float) -> None:
         """Set the interrupter frequency
@@ -281,6 +298,7 @@ class OSCController(BaseController):
         dispatcher.map("/pwm/fm/frequency", self.set_pwm_fm_frequency)
         dispatcher.map("/pwm/duty-cycle",
                        self.set_pwm_duty_cycle)
+
         dispatcher.map("/interrupter/frequency",
                        self.set_interrupter_frequency)
         dispatcher.map("/interrupter/duty-cycle",
