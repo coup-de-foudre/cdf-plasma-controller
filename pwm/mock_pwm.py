@@ -28,7 +28,7 @@ class MockPWM(BasePWM):
 
     def __init__(self):
         self._logger = logging.getLogger(__name__)
-        self._log = self._logger.info
+        self._log = self._logger.debug
         self._duty_cycle = 0.5
         self._frequency = 1.0
         self._is_stopped = False
@@ -55,7 +55,6 @@ class MockPWM(BasePWM):
 
     @property
     def is_stopped(self) -> bool:
-        self._log("%s", locals())
         return self._is_stopped
 
     def start(self) -> None:
