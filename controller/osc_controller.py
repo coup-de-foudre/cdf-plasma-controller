@@ -299,6 +299,10 @@ class OSCController(BaseController):
         dispatcher.map("/pwm/duty-cycle",
                        self.set_pwm_duty_cycle)
 
+        dispatcher.map("/interrupter/start",
+                       self.set_interrupter_start)
+        dispatcher.map("/interrupter/stop",
+                       self.set_interrupter_stop)
         dispatcher.map("/interrupter/frequency",
                        self.set_interrupter_frequency)
         dispatcher.map("/interrupter/duty-cycle",
