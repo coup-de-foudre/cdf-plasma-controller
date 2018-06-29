@@ -109,7 +109,7 @@ class OSCController(BaseController):
         self.osc_bind_host, self.osc_bind_port = osc_bind.split(':')
         self._pwm_frequency_modulator = pwm_frequency_modulator
         self._interrupter = interrupter
-        self._pwm: BasePWM = interrupter.pwm
+        self._pwm = interrupter.pwm
 
         self._pwm_center_frequency = self._pwm.frequency
         self._pwm_offset_factor = 0.0
