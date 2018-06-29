@@ -235,7 +235,7 @@ class OSCController(BaseController):
         """Stop the interrupter"""
         self.logger.debug("%s", locals())
         del osc_path  # unused
-        self._interrupter.start()
+        self._interrupter.stop()
 
     def set_interrupter_frequency(self, osc_path: str,
                                   frequency: float) -> None:
