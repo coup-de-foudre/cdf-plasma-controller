@@ -83,7 +83,7 @@ If you want to run over a network, you'll need to have Python 3.4 or greater
 clone this repo and run
 
 ```
-pip3 install -r requirments.txt
+sudo pip3 install -r requirements.txt
 ```
 
 You should now be able to connect to a remote Raspberry Pi running the
@@ -125,11 +125,17 @@ protocol.
 To enable OSC, setting the `--controller-type=OSC` flag on the command line.
 This starts a OSC server on UDP port `5005` with the following endpoints:
 
+  - `/pwm/start`
+    Start the PWM, but does not turn on the interrupter or the FM modulator.
+
+  - `/pwm/stop`
+    Stop the PWM Also turns the interrupter and FM modulator off.
+
   - `/pwm/center-frequency <float>`
     PWM center frequency in Hz. Optionally accepts an additional
     float which specifies the offset factor; otherwise, the
     offset factor is reset to zero.
-
+    
   - `/pwm/frequency-offset-factor <float>`
     Offset factor for the center frequency. Should be between [-1, 1].
     The true frequency is given by
@@ -141,9 +147,24 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
     This simplifies implementing small changes of the input frequency around a 
     fixed center frequency.
 
-  - `/pwm/duty-cycle <float>`
-    Set the PWM duty cycle. Generally, we recommend 0.5.
+    Use of this endpoint immediately stops the FM modulator.
 
+  - `/pwm/duty-cycle <float>`
+    Set the PWM duty cycle. Settings other than 0.5 (the default) create a DC 
+    offset in the output, which may damage some circuit configurations. 
+
+  -  `/pwm/fm/start`
+    Start FM modulation.
+
+  - `/pwm/fm/stop`
+    Stop FM modulation.
+
+  - `/pwm/fm/spread <float>`
+    Set the PWM FM spread in Hz.
+
+  - `/pwm/fm/frequency <float>`
+    Set the PWM FM frequency in Hz.
+  
   - `/interrupter/frequency <float>`
     Interrupter frequency in Hz.
 

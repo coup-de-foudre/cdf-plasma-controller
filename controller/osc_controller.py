@@ -22,6 +22,14 @@
 
 The following OSC addresses are defined:
 
+    /pwm/start
+        Turn the PWM on. Does not affect the interrupter, so there may
+        be a perceptible delay in restarting if the interrupter duty cycle is
+        running at a low frequency.
+
+    /pwm/stop
+        Turn the PWM off. Also turns the interrupter and FM modulator off.
+
     /pwm/center-frequency <float>
          PWM center frequency in Hz. Optionally accepts an additional
          float which specifies the offset factor; otherwise, the
@@ -36,14 +44,29 @@ The following OSC addresses are defined:
         This simplifies implementations of small modulations of the input
         frequency around a fixed center frequency.
 
+        Use of this endpoint immediately stops the FM modulator.
+
     /pwm/duty-cycle <float>
-        Set the PWM duty cycle. Generally, we recommend 0.5.
+        Set the PWM duty cycle. Settings other than 0.5 (the default) create a
+        DC offset in the output, which may damage some circuit configurations.
+
+    /pwm/fm/start
+        Start FM modulation.
+
+    /pwm/fm/stop
+        Stop FM modulation.
+
+    /pwm/fm/spread <float>
+        Set the PWM FM spread in Hz.
+
+    /pwm/fm/frequency <float>
+        Set the PWM FM frequency in Hz.
 
     /interrupter/frequency <float>
         Interrupter frequency in Hz.
 
     /interrupter/duty-cycle <float>
-        Interrupter duty cycle in Hz.
+        Interrupter duty cycle in Hz. Set duty cycle to 1 for no interruption.
 
 """
 import logging
@@ -53,6 +76,7 @@ from pythonosc.dispatcher import Dispatcher
 
 from controller.base_controller import BaseController
 from interrupter.base_interrupter import BaseInterrupter
+from modulator.base_modulator import BaseModulator
 from pwm.base_pwm import BasePWM
 
 
@@ -71,34 +95,55 @@ class OSCController(BaseController):
 
     def __init__(self,
                  osc_bind: str,
-                 pwm: BasePWM,
+                 pwm_frequency_modulator: BaseModulator,
                  interrupter: BaseInterrupter,
                  ):
         """
         :param osc_bind: The ip:port for the OSC server to listen on
-        :param pwm: The PWM to use
+        :param pwm_frequency_modulator: The frequency modulator for the PWM
         :param interrupter: The interrupter to use
         """
         self.logger = logging.getLogger(__name__)
         self.logger.debug("%s", locals())
 
         self.osc_bind_host, self.osc_bind_port = osc_bind.split(':')
-        self._pwm = pwm
+        self._pwm_frequency_modulator = pwm_frequency_modulator
         self._interrupter = interrupter
+        self._pwm: BasePWM = interrupter.pwm
 
-        self._pwm_center_frequency = pwm.frequency
+        self._pwm_center_frequency = self._pwm.frequency
         self._pwm_offset_factor = 0.0
         self._set_pwm_frequency_with_offset()
-        self._pwm.duty_cycle = pwm.duty_cycle
+        self._pwm.duty_cycle = self._pwm.duty_cycle
 
-    def _set_pwm_frequency_with_offset(self):
+    def _set_pwm_frequency_with_offset(self) -> None:
         self._pwm.frequency = self._pwm_center_frequency * (
                 1 + self._pwm_offset_factor)
+
+    def set_pwm_on(self, osc_path: str) -> None:
+        """Turn the PWM on
+
+        :param osc_path: OSC path this is called with (unused)
+        """
+        self.logger.debug("%s", locals())
+        del osc_path  # unused
+        self._pwm.start()
+
+    def set_pwm_off(self, osc_path: str) -> None:
+        """Turn the PWM off
+
+        :param osc_path: OSC path this is called with (unused)
+        """
+        self.logger.debug("%s", locals())
+        del osc_path  # unused
+        self._pwm_frequency_modulator.stop()
+        self._interrupter.stop()
+        self._pwm.stop()
 
     def set_pwm_center_frequency(self,
                                  osc_path,
                                  center_frequency,
-                                 offset_factor: float=None):
+                                 offset_factor: float=None) -> None:
         """Set the new center frequency
 
         :param osc_path: OSC path that this is called with
@@ -114,7 +159,7 @@ class OSCController(BaseController):
         self._pwm_offset_factor = offset_factor
         self._set_pwm_frequency_with_offset()
 
-    def set_pwm_offset_factor(self, osc_path, offset_factor: float):
+    def set_pwm_offset_factor(self, osc_path, offset_factor: float) -> None:
         """Set the PWM frequency offset factor
 
         :param osc_path: OSC path that this is called with
@@ -124,9 +169,10 @@ class OSCController(BaseController):
         self.logger.debug("%s", locals())
         del osc_path  # unused
         self._pwm_offset_factor = offset_factor
+        self._pwm_frequency_modulator.stop()
         self._set_pwm_frequency_with_offset()
 
-    def set_pwm_duty_cycle(self, osc_path, duty_cycle: float):
+    def set_pwm_duty_cycle(self, osc_path, duty_cycle: float) -> None:
         """Set the duty cycle of the PWM
 
         :param osc_path: OSC path that this is called with
@@ -136,7 +182,46 @@ class OSCController(BaseController):
         del osc_path  # unused
         self._pwm.duty_cycle = duty_cycle
 
-    def set_interrupter_frequency(self, osc_path, frequency: float):
+    def set_pwm_fm_start(self, osc_path: str) -> None:
+        """Start the FM modulator
+
+        :param osc_path: Unused
+        """
+        self.logger.debug("%s", locals())
+        del osc_path  # unused
+        self._pwm_frequency_modulator.start()
+
+    def set_pwm_fm_stop(self, osc_path: str) -> None:
+        """Stop the FM modulator
+
+        :param osc_path: Unused
+        """
+        self.logger.debug("%s", locals())
+        del osc_path  # unused
+        self._pwm_frequency_modulator.stop()
+
+    def set_pwm_fm_spread(self, osc_path: str, spread: float) -> None:
+        """Set the FM spread
+
+        :param osc_path: Unused
+        :param spread: Frequency spread in Hz
+        """
+        self.logger.debug("%s", locals())
+        del osc_path  # unused
+        self._pwm_frequency_modulator.set_spread(spread)
+
+    def set_pwm_fm_frequency(self, osc_path: str, frequency: float) -> None:
+        """Set the FM frequency
+
+        :param osc_path: Unused
+        :param frequency: FM freqeuncy in Hz
+        """
+        self.logger.debug("%s", locals())
+        del osc_path  # unused
+        self._pwm_frequency_modulator.set_frequency(frequency)
+
+    def set_interrupter_frequency(self, osc_path: str,
+                                  frequency: float) -> None:
         """Set the interrupter frequency
 
         :param osc_path: OSC path that this is called with
@@ -146,7 +231,8 @@ class OSCController(BaseController):
         del osc_path  # unused
         self._interrupter.frequency = frequency
 
-    def set_interrupter_duty_cycle(self, osc_path, duty_cycle: float):
+    def set_interrupter_duty_cycle(self, osc_path: str,
+                                   duty_cycle: float) -> None:
         """Handler to set the interrupter duty cycle
 
         :param osc_path: OSC path that this is called with
@@ -156,19 +242,21 @@ class OSCController(BaseController):
         del osc_path  # unused
         self._interrupter.duty_cycle = duty_cycle
 
-    def start(self):
+    def start(self) -> None:
         """Start the PWM"""
         self.logger.debug("Starting")
         self._pwm.start()
         self._interrupter.start()
+        self._pwm_frequency_modulator.start()
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Gracefully stop the pwm"""
         self.logger.debug("Shutting down")
-        self._pwm.stop()
+        self._pwm_frequency_modulator.stop()
         self._interrupter.stop()
+        self._pwm.stop()
 
-    def run(self):
+    def run(self) -> None:
         """Start the controller and block thread execution"""
         self.logger.debug("Running")
         dispatcher = self._get_dispatcher()
@@ -179,10 +267,18 @@ class OSCController(BaseController):
     def _get_dispatcher(self) -> Dispatcher:
         self.logger.debug("Creating dispatcher")
         dispatcher = Dispatcher()
+
+        dispatcher.map("/pwm/start", self.set_pwm_on)
+        dispatcher.map("/pwm/stop", self.set_pwm_off)
+
         dispatcher.map("/pwm/center-frequency",
                        self.set_pwm_center_frequency)
         dispatcher.map("/pwm/frequency-offset-factor",
                        self.set_pwm_offset_factor)
+        dispatcher.map("/pwm/fm/start", self.set_pwm_fm_start)
+        dispatcher.map("/pwm/fm/stop", self.set_pwm_fm_stop)
+        dispatcher.map("/pwm/fm/spread", self.set_pwm_fm_spread)
+        dispatcher.map("/pwm/fm/frequency", self.set_pwm_fm_frequency)
         dispatcher.map("/pwm/duty-cycle",
                        self.set_pwm_duty_cycle)
         dispatcher.map("/interrupter/frequency",
@@ -196,6 +292,6 @@ class OSCController(BaseController):
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self.logger.debug("%s", locals())
         self.shutdown()
