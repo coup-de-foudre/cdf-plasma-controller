@@ -31,15 +31,18 @@ The following OSC addresses are defined:
         Turn the PWM off. Also turns the interrupter and FM modulator off.
 
     /pwm/center-frequency <float>
-         PWM center frequency in Hz. Optionally accepts an additional
-         float which specifies the offset factor; otherwise, the
-         offset factor is reset to zero.
+        PWM center frequency in Hz. Resets the fine control value to zero.
 
-    /pwm/frequency-offset-factor <float>
-        Offset factor for the center frequency. Should be between [-1, 1].
+    /pwm/fine/spread <float>
+        Set fine control frequency spread around the center frequency
+
+    /pwm/fine/value <float>
+        Set fine control frequency value. Value is capped between [-1, 1].
         The true frequency is given by
 
-            center-frequency * (1 + offset-factor)
+            center-frequency + value * spread
+
+        where spread is set with /pwm/fine/spread.
 
         This simplifies implementations of small modulations of the input
         frequency around a fixed center frequency.
@@ -117,13 +120,14 @@ class OSCController(BaseController):
         self._pwm = interrupter.pwm
 
         self._pwm_center_frequency = self._pwm.frequency
-        self._pwm_offset_factor = 0.0
-        self._set_pwm_frequency_with_offset()
+        self._pwm_fine_spread = 0.0
+        self._pwm_fine_value = 0.0
+        self._set_pwm_frequency_with_fine_control()
         self._pwm.duty_cycle = self._pwm.duty_cycle
 
-    def _set_pwm_frequency_with_offset(self) -> None:
-        self._pwm.frequency = self._pwm_center_frequency * (
-                1 + self._pwm_offset_factor)
+    def _set_pwm_frequency_with_fine_control(self) -> None:
+        self._pwm.frequency = (self._pwm_center_frequency +
+                               self._pwm_fine_spread * self._pwm_fine_value)
 
     def set_pwm_on(self, osc_path: str) -> None:
         """Turn the PWM on
@@ -147,35 +151,42 @@ class OSCController(BaseController):
 
     def set_pwm_center_frequency(self,
                                  osc_path,
-                                 center_frequency,
-                                 offset_factor: float=None) -> None:
+                                 center_frequency) -> None:
         """Set the new center frequency
 
         :param osc_path: OSC path that this is called with
         :param center_frequency: Center frequency in Hz
-        :param offset_factor: Optional new offset factor. By default, it's
-             reset to zero.
         """
         self.logger.debug("%s", locals())
         del osc_path  # unused
-        if offset_factor is None:
-            offset_factor = 0.0
         self._pwm_center_frequency = center_frequency
-        self._pwm_offset_factor = offset_factor
-        self._set_pwm_frequency_with_offset()
+        self._pwm_fine_value = 0.0
+        self._set_pwm_frequency_with_fine_control()
 
-    def set_pwm_offset_factor(self, osc_path, offset_factor: float) -> None:
-        """Set the PWM frequency offset factor
+    def set_pwm_fine_spread(self, osc_path: str, spread: float) -> None:
+        """Set the PWM fine control spread
 
         :param osc_path: OSC path that this is called with
-        :param offset_factor: A number between -1 and 1. The output
-            frequency is center_frequency * (1+offset_factor).
+        :param spread: Spread of the fine control, in Hz.
         """
         self.logger.debug("%s", locals())
         del osc_path  # unused
-        self._pwm_offset_factor = offset_factor
+        self._pwm_fine_spread = spread
         self._pwm_frequency_modulator.stop()
-        self._set_pwm_frequency_with_offset()
+        self._set_pwm_frequency_with_fine_control()
+
+    def set_pwm_fine_value(self, osc_path: str, value: float) -> None:
+        self.logger.debug("%s", locals())
+        del osc_path  # unused
+        if value > 1:
+            self.logger.warning("Clipped value greater than 1: %s", value)
+            value = 1
+        elif value < -1:
+            self.logger.warning("Clipped value less than -1: %s", value)
+            value = -1
+        self._pwm_fine_value = value
+        self._pwm_frequency_modulator.stop()
+        self._set_pwm_frequency_with_fine_control()
 
     def set_pwm_duty_cycle(self, osc_path, duty_cycle: float) -> None:
         """Set the duty cycle of the PWM
@@ -290,8 +301,10 @@ class OSCController(BaseController):
 
         dispatcher.map("/pwm/center-frequency",
                        self.set_pwm_center_frequency)
-        dispatcher.map("/pwm/frequency-offset-factor",
-                       self.set_pwm_offset_factor)
+
+        dispatcher.map("/pwm/fine/spread", self.set_pwm_fine_spread)
+        dispatcher.map("/pwm/fine/value", self.set_pwm_fine_value)
+
         dispatcher.map("/pwm/fm/start", self.set_pwm_fm_start)
         dispatcher.map("/pwm/fm/stop", self.set_pwm_fm_stop)
         dispatcher.map("/pwm/fm/spread", self.set_pwm_fm_spread)

@@ -132,9 +132,18 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
     Stop the PWM Also turns the interrupter and FM modulator off.
 
   - `/pwm/center-frequency <float>`
-    PWM center frequency in Hz. Optionally accepts an additional
-    float which specifies the offset factor; otherwise, the
-    offset factor is reset to zero.
+     PWM center frequency in Hz. Resets the fine control value to zero.
+
+  - `/pwm/fine/spread <float>`
+    Set fine control frequency spread around the center frequency
+
+  - `/pwm/fine/value <float>`
+    Set fine control frequency value. Value is capped between [-1, 1].
+    The true frequency is given by
+
+        center-frequency + value * spread
+
+    where spread is set with /pwm/fine/spread.
     
   - `/pwm/frequency-offset-factor <float>`
     Offset factor for the center frequency. Should be between [-1, 1].
