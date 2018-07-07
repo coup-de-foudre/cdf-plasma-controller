@@ -127,7 +127,8 @@ def set_up_logging(verbose=False):
         level = logging.DEBUG
     else:
         level = logging.WARN
-    logging.basicConfig(level=level)
+    log_format = "%(levelname)s:%(name)s:%(filename)s:%(funcName)s:%(lineno)d:%(message)s"
+    logging.basicConfig(level=level, format=log_format)
 
 
 def get_controller(args: argparse.Namespace) -> BaseController:
@@ -154,7 +155,7 @@ def get_controller(args: argparse.Namespace) -> BaseController:
     if args.controller_type == "keyboard":
         controller = KeyboardController(modulator, interrupter)
     elif args.controller_type == "OSC":
-        controller = OSCController(args.osc_bind, pwm, interrupter)
+        controller = OSCController(args.osc_bind, modulator, interrupter)
     else:
         raise ValueError("Unknown controller type %s", args.controller_type)
 
