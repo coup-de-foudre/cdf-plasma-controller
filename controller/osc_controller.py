@@ -23,9 +23,7 @@
 The following OSC addresses are defined:
 
     /pwm/start
-        Turn the PWM on. Does not affect the interrupter, so there may
-        be a perceptible delay in restarting if the interrupter duty cycle is
-        running at a low frequency.
+        Start the PWM, but does not turn on the interrupter or the FM modulator.
 
     /pwm/stop
         Turn the PWM off. Also turns the interrupter and FM modulator off.
@@ -65,16 +63,16 @@ The following OSC addresses are defined:
     /pwm/fm/frequency <float>
         Set the PWM FM frequency in Hz.
 
-    /interrupter/start
+    /pwm/interrupter/start
         Start the interrupter.
 
-    /interrupter/stop
+    /pwm/interrupter/stop
         Stop the interrupter.
 
-    /interrupter/frequency <float>
+    /pwm/interrupter/frequency <float>
         Interrupter frequency in Hz.
 
-    /interrupter/duty-cycle <float>
+    /pwm/interrupter/duty-cycle <float>
         Interrupter duty cycle in Hz. Set duty cycle to 1 for no interruption.
 
 """
@@ -312,13 +310,13 @@ class OSCController(BaseController):
         dispatcher.map("/pwm/duty-cycle",
                        self.set_pwm_duty_cycle)
 
-        dispatcher.map("/interrupter/start",
+        dispatcher.map("/pwm/interrupter/start",
                        self.set_interrupter_start)
-        dispatcher.map("/interrupter/stop",
+        dispatcher.map("/pwm/interrupter/stop",
                        self.set_interrupter_stop)
-        dispatcher.map("/interrupter/frequency",
+        dispatcher.map("/pwm/interrupter/frequency",
                        self.set_interrupter_frequency)
-        dispatcher.map("/interrupter/duty-cycle",
+        dispatcher.map("/pwm/interrupter/duty-cycle",
                        self.set_interrupter_duty_cycle)
         return dispatcher
 

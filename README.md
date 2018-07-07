@@ -174,16 +174,16 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
   - `/pwm/fm/frequency <float>`
     Set the PWM FM frequency in Hz.
 
-  - `/interrupter/start`
+  - `/pwm/interrupter/start`
     Start the interrupter.
 
-  - `/interrupter/stop`
+  - `/pwm/interrupter/stop`
     Stop the interrupter.
   
-  - `/interrupter/frequency <float>`
+  - `/pwm/interrupter/frequency <float>`
     Interrupter frequency in Hz.
 
-  - `/interrupter/duty-cycle <float>`
+  - `/pwm/interrupter/duty-cycle <float>`
     Interrupter duty cycle in Hz.
 
 You can test OSC using the included `osc_msg.py` script. You can test that
