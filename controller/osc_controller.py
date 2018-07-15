@@ -20,13 +20,19 @@
 
 """Controller for the OSC input
 
-The following OSC addresses are defined:
+By default, root address for all commands is `pwm`. With this root, the
+following OSC:
 
     /pwm/start
         Start the PWM, but does not turn on the interrupter or the FM modulator.
 
     /pwm/stop
         Turn the PWM off. Also turns the interrupter and FM modulator off.
+
+    /pwm/toggle <value>
+
+        Toggle based on the value of the argument. No argument or a
+        "falsey" value turns stops, while a "truthy" value starts.
 
     /pwm/center-frequency <float>
         PWM center frequency in Hz. Resets the fine control value to zero.
@@ -57,17 +63,28 @@ The following OSC addresses are defined:
     /pwm/fm/stop
         Stop FM modulation.
 
+    /pwm/fm/toggle <value>
+
+        Toggle based on the value of the argument. No argument or a
+        "falsey" value turns stops, while a "truthy" value starts.
+
     /pwm/fm/spread <float>
         Set the PWM FM spread in Hz.
 
     /pwm/fm/frequency <float>
-        Set the PWM FM frequency in Hz.
+        Set the PWM FM frequency in Hz. Use of this endpoint starts the FM
+        modulation.
 
     /pwm/interrupter/start
         Start the interrupter.
 
     /pwm/interrupter/stop
         Stop the interrupter.
+
+    /pwm/interrupter/toggle <value>
+
+        Toggle based on the value of the argument. No argument or a
+        "falsey" value turns stops, while a "truthy" value starts.
 
     /pwm/interrupter/frequency <float>
         Interrupter frequency in Hz.
@@ -77,6 +94,7 @@ The following OSC addresses are defined:
 
 """
 import logging
+from typing import Iterable, Callable, Any
 
 from pythonosc import osc_server
 from pythonosc.dispatcher import Dispatcher
@@ -84,6 +102,21 @@ from pythonosc.dispatcher import Dispatcher
 from controller.base_controller import BaseController
 from interrupter.base_interrupter import BaseInterrupter
 from modulator.base_modulator import BaseModulator
+
+
+def _toggle_callback(
+        on: Callable[[str], None],
+        off: Callable[[str], None]) -> Callable[[str, Any], None]:
+    """Return an OSC callback for that toggles based on truthiness of arg"""
+
+    def toggle_callback(osc_path: str, truthy: Any=None) -> None:
+        logging.getLogger(__name__).debug("%s", locals())
+        if truthy:
+            return on(osc_path)
+        else:
+            return off(osc_path)
+
+    return toggle_callback
 
 
 class OSCController(BaseController):
@@ -100,22 +133,31 @@ class OSCController(BaseController):
     """
 
     def __init__(self,
-                 osc_bind: str,
+                 osc_host: str,
+                 osc_port: int,
                  pwm_frequency_modulator: BaseModulator,
                  interrupter: BaseInterrupter,
+                 address_roots: Iterable[str]= ('pwm',),
                  ):
         """
-        :param osc_bind: The ip:port for the OSC server to listen on
+        :param osc_host: The hostname for the OSC server to listen on
+        :param osc_port: The port for the OSC server to listen on
         :param pwm_frequency_modulator: The frequency modulator for the PWM
         :param interrupter: The interrupter to use
+        :param address_roots: The root addresses to bind (default: ['pwm']).
+            Leading and trailing slashes have no effect, but multiple parts
+            are allowed, e.g., `pwm/channel-01`.
         """
         self.logger = logging.getLogger(__name__)
         self.logger.debug("%s", locals())
 
-        self.osc_bind_host, self.osc_bind_port = osc_bind.split(':')
+        self.osc_bind_host, self.osc_bind_port = osc_host, osc_port
         self._pwm_frequency_modulator = pwm_frequency_modulator
         self._interrupter = interrupter
         self._pwm = interrupter.pwm
+
+        # Remove leading and trailing `/` in roots
+        self._address_roots = list(r.strip('/') for r in address_roots)
 
         self._pwm_center_frequency = self._pwm.frequency
         self._pwm_fine_spread = 0.0
@@ -136,8 +178,10 @@ class OSCController(BaseController):
         del osc_path  # unused
         self._pwm.start()
 
-    def set_pwm_off(self, osc_path: str) -> None:
+    def set_pwm_off(self, osc_path: str, *_) -> None:
         """Turn the PWM off
+
+        Accepts any length of argument.
 
         :param osc_path: OSC path this is called with (unused)
         """
@@ -233,6 +277,7 @@ class OSCController(BaseController):
         self.logger.debug("%s", locals())
         del osc_path  # unused
         self._pwm_frequency_modulator.set_frequency(frequency)
+        self._pwm_frequency_modulator.start()
 
     def set_interrupter_start(self, osc_path: str) -> None:
         """Start the interrupter"""
@@ -240,7 +285,7 @@ class OSCController(BaseController):
         del osc_path  # unused
         self._interrupter.start()
 
-    def set_interrupter_stop(self, osc_path: str) -> None:
+    def set_interrupter_stop(self, osc_path: str, *_) -> None:
         """Stop the interrupter"""
         self.logger.debug("%s", locals())
         del osc_path  # unused
@@ -270,8 +315,8 @@ class OSCController(BaseController):
 
     def start(self) -> None:
         """Start the PWM"""
-        self.logger.debug("Starting")
-        self._pwm.start()
+        self.logger.info("Starting OSC controller, but PWM will not start "
+                         "until a start command is received.")
         self._interrupter.start()
         self._pwm_frequency_modulator.start()
 
@@ -286,38 +331,48 @@ class OSCController(BaseController):
         """Start the controller and block thread execution"""
         self.logger.debug("Running")
         dispatcher = self._get_dispatcher()
+        self.logger.info("Binding OSC server to %s:%s",
+                         self.osc_bind_host, self.osc_bind_port)
         server = osc_server.ThreadingOSCUDPServer(
-            (self.osc_bind_host, int(self.osc_bind_port)), dispatcher)
+            (self.osc_bind_host, self.osc_bind_port), dispatcher)
         server.serve_forever()
 
     def _get_dispatcher(self) -> Dispatcher:
-        self.logger.debug("Creating dispatcher")
+        self.logger.info("Binding dispatcher to OSC address roots %s",
+                         self._address_roots)
         dispatcher = Dispatcher()
+        for root in self._address_roots:
+            dispatcher.map(f"/{root}/start", self.set_pwm_on)
+            dispatcher.map(f"/{root}/stop", self.set_pwm_off)
+            dispatcher.map(f"/{root}/toggle",
+                           _toggle_callback(self.set_pwm_on, self.set_pwm_off))
+            dispatcher.map(f"/{root}/center-frequency",
+                           self.set_pwm_center_frequency)
 
-        dispatcher.map("/pwm/start", self.set_pwm_on)
-        dispatcher.map("/pwm/stop", self.set_pwm_off)
+            dispatcher.map(f"/{root}/fine/spread", self.set_pwm_fine_spread)
+            dispatcher.map(f"/{root}/fine/value", self.set_pwm_fine_value)
 
-        dispatcher.map("/pwm/center-frequency",
-                       self.set_pwm_center_frequency)
+            dispatcher.map(f"/{root}/fm/start", self.set_pwm_fm_start)
+            dispatcher.map(f"/{root}/fm/stop", self.set_pwm_fm_stop)
+            dispatcher.map(f"/{root}/fm/toggle",
+                           _toggle_callback(self.set_pwm_fm_start,
+                                            self.set_pwm_fm_stop))
+            dispatcher.map(f"/{root}/fm/spread", self.set_pwm_fm_spread)
+            dispatcher.map(f"/{root}/fm/frequency", self.set_pwm_fm_frequency)
+            dispatcher.map(f"/{root}/duty-cycle",
+                           self.set_pwm_duty_cycle)
 
-        dispatcher.map("/pwm/fine/spread", self.set_pwm_fine_spread)
-        dispatcher.map("/pwm/fine/value", self.set_pwm_fine_value)
-
-        dispatcher.map("/pwm/fm/start", self.set_pwm_fm_start)
-        dispatcher.map("/pwm/fm/stop", self.set_pwm_fm_stop)
-        dispatcher.map("/pwm/fm/spread", self.set_pwm_fm_spread)
-        dispatcher.map("/pwm/fm/frequency", self.set_pwm_fm_frequency)
-        dispatcher.map("/pwm/duty-cycle",
-                       self.set_pwm_duty_cycle)
-
-        dispatcher.map("/pwm/interrupter/start",
-                       self.set_interrupter_start)
-        dispatcher.map("/pwm/interrupter/stop",
-                       self.set_interrupter_stop)
-        dispatcher.map("/pwm/interrupter/frequency",
-                       self.set_interrupter_frequency)
-        dispatcher.map("/pwm/interrupter/duty-cycle",
-                       self.set_interrupter_duty_cycle)
+            dispatcher.map(f"/{root}/interrupter/start",
+                           self.set_interrupter_start)
+            dispatcher.map(f"/{root}/interrupter/stop",
+                           self.set_interrupter_stop)
+            dispatcher.map(f"/{root}/interrupter/toggle",
+                           _toggle_callback(self.set_interrupter_start,
+                                            self.set_interrupter_stop))
+            dispatcher.map(f"/{root}/interrupter/frequency",
+                           self.set_interrupter_frequency)
+            dispatcher.map(f"/{root}/interrupter/duty-cycle",
+                           self.set_interrupter_duty_cycle)
         return dispatcher
 
     def __enter__(self) -> BaseController:
