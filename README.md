@@ -131,6 +131,10 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
   - `/pwm/stop`
     Stop the PWM Also turns the interrupter and FM modulator off.
 
+  - `/pwm/toggle <value>`
+    Toggle based on the value of the argument. No argument or a
+    "falsey" value turns stops, while a "truthy" value starts.
+
   - `/pwm/center-frequency <float>`
      PWM center frequency in Hz. Resets the fine control value to zero.
 
@@ -168,30 +172,42 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
   - `/pwm/fm/stop`
     Stop FM modulation.
 
+  - `/pwm/fm/toggle <value>`
+    Toggle based on the value of the argument. No argument or a
+    "falsey" value turns stops, while a "truthy" value starts.
+
   - `/pwm/fm/spread <float>`
     Set the PWM FM spread in Hz.
 
   - `/pwm/fm/frequency <float>`
-    Set the PWM FM frequency in Hz.
+    Set the PWM FM frequency in Hz. Use of this endpoint starts the FM
+    modulation.
 
   - `/pwm/interrupter/start`
     Start the interrupter.
 
   - `/pwm/interrupter/stop`
     Stop the interrupter.
+
+  - `/pwm/interrupter/toggle <value>`
+    Toggle based on the value of the argument. No argument or a
+    "falsey" value turns stops, while a "truthy" value starts.
   
   - `/pwm/interrupter/frequency <float>`
     Interrupter frequency in Hz.
 
   - `/pwm/interrupter/duty-cycle <float>`
     Interrupter duty cycle in Hz.
+    
+The default root `/pwm/` is configurable for adding new channels via the
+`--osc-roots` parameter.
 
 You can test OSC using the included `osc_msg.py` script. You can test that
 the server is receiving messages as follows:
 
 ```bash
 # On RPi on localhost, local network address 192.168.2.247
-./plasma_controller.py --controller-type OSC --verbose -f 10000
+./plasma_controller.py --controller-type OSC -vv -f 10000
 
 # In a separate terminal screen same RPi
 ./utils/osc_msg.py /pwm/center-frequency 10001
@@ -228,10 +244,11 @@ cycle.
     ./plasma_controller.py --pin 12 --host 192.168.2.247 -f 15000
     ```
 
-1. Start an OSC controller with initial frequency of 83.3MHz.
+1. Start an OSC controller with initial frequency of 83.3MHz with root `pwm1`
+   and verbose logging:
 
     ```bash
-    ./plasma_controller.py --controller-type OSC -f 83300000
+    ./plasma_controller.py --controller-type OSC -f 83300000 -r pwm1 -vvv
     ```
 
 

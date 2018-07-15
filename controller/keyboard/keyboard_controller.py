@@ -18,7 +18,6 @@
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-import logging
 from curses import (wrapper, flash as flash_screen, A_STANDOUT)
 from typing import Callable, List, Dict
 
@@ -29,8 +28,6 @@ from ..base_controller import BaseController
 from .converters import curses_int_to_unicode
 from .keyboard_knob import KeyboardException, AbstractKeyboardKnob, \
     SimpleKnob, ProportionalTickKnob
-
-logger = logging.getLogger(__name__)
 
 
 def keyboard_control_knobs(interrupter: BaseInterrupter,

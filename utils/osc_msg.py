@@ -55,7 +55,7 @@ def main():
     args = parser.parse_args()
     ip, port = args.server.split(':')
 
-    client = udp_client.SimpleUDPClient(ip, int(port))
+    client = udp_client.SimpleUDPClient(ip, int(port), allow_broadcast=True)
     client.send_message(args.address, map(parse_into_type, args.value))
 
 
