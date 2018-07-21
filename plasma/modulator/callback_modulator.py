@@ -25,7 +25,7 @@ import math
 from numbers import Real
 from typing import Callable
 
-from modulator.base_modulator import BaseModulator
+from plasma.modulator.base_modulator import BaseModulator
 
 
 _2PI = 2 * math.pi

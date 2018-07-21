@@ -23,8 +23,8 @@ from math import log10
 from numbers import Real
 from typing import Callable
 
-from controller.base_controller import ControllerException
-from controller.keyboard.converters import unicode_to_curses_int
+from plasma.controller.base_controller import ControllerException
+from plasma.controller.keyboard.converters import unicode_to_curses_int
 
 
 class KeyboardException(ControllerException):

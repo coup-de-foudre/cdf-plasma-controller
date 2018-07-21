@@ -23,8 +23,8 @@ from numbers import Real
 from concurrent.futures import ThreadPoolExecutor
 import time
 
-from interrupter.base_interrupter import BaseInterrupter, InterrupterException
-from pwm.base_pwm import BasePWM
+from plasma.interrupter.base_interrupter import BaseInterrupter, InterrupterException
+from plasma.pwm.base_pwm import BasePWM
 
 
 class SimpleInterrupter(BaseInterrupter):
