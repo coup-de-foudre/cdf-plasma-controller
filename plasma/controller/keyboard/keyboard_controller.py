@@ -21,8 +21,8 @@
 from curses import (wrapper, flash as flash_screen, A_STANDOUT)
 from typing import Callable, List, Dict
 
-from interrupter.base_interrupter import BaseInterrupter
-from modulator.base_modulator import BaseModulator
+from plasma.interrupter.base_interrupter import BaseInterrupter
+from plasma.modulator.base_modulator import BaseModulator
 
 from ..base_controller import BaseController
 from .converters import curses_int_to_unicode

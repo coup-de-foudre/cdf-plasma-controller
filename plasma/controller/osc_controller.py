@@ -99,9 +99,9 @@ from typing import Iterable, Callable, Any
 from pythonosc import osc_server
 from pythonosc.dispatcher import Dispatcher
 
-from controller.base_controller import BaseController
-from interrupter.base_interrupter import BaseInterrupter
-from modulator.base_modulator import BaseModulator
+from plasma.controller.base_controller import BaseController
+from plasma.interrupter.base_interrupter import BaseInterrupter
+from plasma.modulator.base_modulator import BaseModulator
 
 
 def _toggle_callback(

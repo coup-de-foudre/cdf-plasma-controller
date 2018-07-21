@@ -21,7 +21,7 @@
 from abc import ABC, abstractmethod
 from numbers import Real
 
-from pwm.base_pwm import BasePWM
+from plasma.pwm.base_pwm import BasePWM
 
 
 class InterrupterException(Exception):

@@ -22,7 +22,7 @@ import time
 import unittest
 from numbers import Real
 
-from modulator.callback_modulator import CallbackModulator
+from plasma.modulator.callback_modulator import CallbackModulator
 
 
 class TestCallbackModulator(unittest.TestCase):
