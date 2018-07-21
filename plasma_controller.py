@@ -25,13 +25,13 @@ import logging
 import sys
 from typing import Tuple
 
-from controller.base_controller import BaseController
-from controller.keyboard.keyboard_controller import KeyboardController
-from controller.osc_controller import OSCController
-from interrupter.simple_interrupter import SimpleInterrupter
-from modulator.callback_modulator import CallbackModulator
-from pwm.mock_pwm import MockPWM
-from pwm.pi_pwm import PiHardwarePWM
+from plasma.controller.base_controller import BaseController
+from plasma.controller.keyboard.keyboard_controller import KeyboardController
+from plasma.controller.osc_controller import OSCController
+from plasma.interrupter.simple_interrupter import SimpleInterrupter
+from plasma.modulator.callback_modulator import CallbackModulator
+from plasma.pwm.mock_pwm import MockPWM
+from plasma.pwm.pi_pwm import PiHardwarePWM
 
 
 def parse_arguments() -> argparse.Namespace:
