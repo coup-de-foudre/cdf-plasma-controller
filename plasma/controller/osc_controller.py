@@ -318,7 +318,7 @@ class OSCController(BaseController):
         self.logger.info("Starting OSC controller, but PWM will not start "
                          "until a start command is received.")
         self._interrupter.start()
-        self._pwm_frequency_modulator.start()
+        # self._pwm_frequency_modulator.start()
 
     def shutdown(self) -> None:
         """Gracefully stop the pwm"""
@@ -342,36 +342,42 @@ class OSCController(BaseController):
                          self._address_roots)
         dispatcher = Dispatcher()
         for root in self._address_roots:
-            dispatcher.map(f"/{root}/start", self.set_pwm_on)
-            dispatcher.map(f"/{root}/stop", self.set_pwm_off)
-            dispatcher.map(f"/{root}/toggle",
+            dispatcher.map("/{root}/start".format(root=root), self.set_pwm_on)
+            dispatcher.map("/{root}/stop".format(root=root), self.set_pwm_off)
+            dispatcher.map("/{root}/toggle".format(root=root),
                            _toggle_callback(self.set_pwm_on, self.set_pwm_off))
-            dispatcher.map(f"/{root}/center-frequency",
+            dispatcher.map("/{root}/center-frequency".format(root=root),
                            self.set_pwm_center_frequency)
 
-            dispatcher.map(f"/{root}/fine/spread", self.set_pwm_fine_spread)
-            dispatcher.map(f"/{root}/fine/value", self.set_pwm_fine_value)
+            dispatcher.map("/{root}/fine/spread".format(root=root),
+                           self.set_pwm_fine_spread)
+            dispatcher.map("/{root}/fine/value".format(root=root),
+                           self.set_pwm_fine_value)
 
-            dispatcher.map(f"/{root}/fm/start", self.set_pwm_fm_start)
-            dispatcher.map(f"/{root}/fm/stop", self.set_pwm_fm_stop)
-            dispatcher.map(f"/{root}/fm/toggle",
+            dispatcher.map("/{root}/fm/start".format(root=root),
+                           self.set_pwm_fm_start)
+            dispatcher.map("/{root}/fm/stop".format(root=root),
+                           self.set_pwm_fm_stop)
+            dispatcher.map("/{root}/fm/toggle",
                            _toggle_callback(self.set_pwm_fm_start,
                                             self.set_pwm_fm_stop))
-            dispatcher.map(f"/{root}/fm/spread", self.set_pwm_fm_spread)
-            dispatcher.map(f"/{root}/fm/frequency", self.set_pwm_fm_frequency)
-            dispatcher.map(f"/{root}/duty-cycle",
+            dispatcher.map("/{root}/fm/spread".format(root=root),
+                           self.set_pwm_fm_spread)
+            dispatcher.map("/{root}/fm/frequency".format(root=root),
+                           self.set_pwm_fm_frequency)
+            dispatcher.map("/{root}/duty-cycle".format(root=root),
                            self.set_pwm_duty_cycle)
 
-            dispatcher.map(f"/{root}/interrupter/start",
+            dispatcher.map("/{root}/interrupter/start".format(root=root),
                            self.set_interrupter_start)
-            dispatcher.map(f"/{root}/interrupter/stop",
+            dispatcher.map("/{root}/interrupter/stop".format(root=root),
                            self.set_interrupter_stop)
-            dispatcher.map(f"/{root}/interrupter/toggle",
+            dispatcher.map("/{root}/interrupter/toggle".format(root=root),
                            _toggle_callback(self.set_interrupter_start,
                                             self.set_interrupter_stop))
-            dispatcher.map(f"/{root}/interrupter/frequency",
+            dispatcher.map("/{root}/interrupter/frequency".format(root=root),
                            self.set_interrupter_frequency)
-            dispatcher.map(f"/{root}/interrupter/duty-cycle",
+            dispatcher.map("/{root}/interrupter/duty-cycle".format(root=root),
                            self.set_interrupter_duty_cycle)
         return dispatcher
 

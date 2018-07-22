@@ -89,13 +89,13 @@ class BaseModulator(ABC):
     def set_center(self, value: Real) -> None:
         self.center = value
 
-    def __str__(self):
-        return (f"{self.__class__.__name__}("
-                f"frequency={self.frequency}, " 
-                f"spread={self.spread}, " 
-                f"center={self.center}, " 
-                f"is_stopped={self.is_stopped}"
-                )
-
-    def __repr__(self):
-        return f"<{self} at 0x{id(self):02X}>"
+    # def __str__(self):
+    #     return (f"{self.__class__.__name__}("
+    #             f"frequency={self.frequency}, "
+    #             f"spread={self.spread}, "
+    #             f"center={self.center}, "
+    #             f"is_stopped={self.is_stopped}"
+    #             )
+    #
+    # def __repr__(self):
+    #     return f"<{self} at 0x{id(self):02X}>"
