@@ -210,10 +210,10 @@ the server is receiving messages as follows:
 ./plasma_controller.py --controller-type OSC -vv -f 10000
 
 # In a separate terminal screen same RPi
-./utils/osc_msg.py /pwm/center-frequency 10001
+./plasma/utils/osc_msg.py /pwm/center-frequency 10001
 
 # On another machine on the local network
-./utils/osc_msg.py --server 192.168.2.247:5005 /pwm/center-frequency 10001
+./plasma/utils/osc_msg.py --server 192.168.2.247:5005 /pwm/center-frequency 10001
 ```
 
 If it's successful, you should see output that looks like the following:

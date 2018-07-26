@@ -26,7 +26,7 @@ import sys
 from typing import Tuple
 
 from plasma.controller.base_controller import BaseController
-from plasma.controller.keyboard.keyboard_controller import KeyboardController
+from plasma.controller.keyboard_controller import KeyboardController
 from plasma.controller.osc_controller import OSCController
 from plasma.interrupter.simple_interrupter import SimpleInterrupter
 from plasma.modulator.callback_modulator import CallbackModulator

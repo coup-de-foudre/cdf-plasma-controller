@@ -19,4 +19,6 @@
 # <http://www.gnu.org/licenses/>.
 
 pigpio
--e vendor/python-osc
+-e ./vendor/python-osc
+pytest
+tox
