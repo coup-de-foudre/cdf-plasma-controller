@@ -1,9 +1,12 @@
+doc
 .idea
-.DS_Store
+.git
+.gitignore
+.tox
 
 ### Python template
 # Byte-compiled / optimized / DLL files
-__pycache__/
+**/__pycache__
 *.py[cod]
 *$py.class
 .pytest_cache
@@ -25,7 +28,7 @@ lib64/
 parts/
 sdist/
 var/
-*.egg-info/
+**/*.egg-info/
 .installed.cfg
 *.egg
 

@@ -23,7 +23,8 @@ from numbers import Real
 from concurrent.futures import ThreadPoolExecutor
 import time
 
-from plasma.interrupter.base_interrupter import BaseInterrupter, InterrupterException
+from plasma.interrupter.base_interrupter import (
+    BaseInterrupter, InterrupterException)
 from plasma.pwm.base_pwm import BasePWM
 
 
@@ -68,7 +69,8 @@ class SimpleInterrupter(BaseInterrupter):
     def _validate_duty_cycle(duty_cycle: float):
         if duty_cycle < 0 or duty_cycle > 1:
             raise InterrupterException(
-                "Interrupter duty cycle should be in [0,1], not %s", duty_cycle)
+                "Interrupter duty cycle should be in [0,1], not %s",
+                duty_cycle)
 
     @property
     def frequency(self) -> Real:
@@ -125,7 +127,8 @@ class SimpleInterrupter(BaseInterrupter):
             self._pwm.start()
         elif self.duty_cycle < 1.0:
             toggle_seconds = (
-                1.0 / self.frequency * (1 - self.duty_cycle) - self._time_error)
+                1.0 / self.frequency * (1 - self.duty_cycle)
+                - self._time_error)
             self._pwm.stop()
         if toggle_seconds > 0:
             self._spin_wait(toggle_seconds)
