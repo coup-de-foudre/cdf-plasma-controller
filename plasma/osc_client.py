@@ -46,7 +46,7 @@ def parse_into_type(parameter: str):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--server",
+        "--host",
         metavar="IP:PORT",
         default="127.0.0.1:5005",
         type=str,
@@ -56,7 +56,7 @@ def main():
 
     args = parser.parse_args()
 
-    ip, port = parse_bind_host(args.server, 5005)
+    ip, port = parse_bind_host(args.host, 5005)
 
     client = udp_client.SimpleUDPClient(ip, int(port), allow_broadcast=True)
     client.send_message(args.address, map(parse_into_type, args.value))
