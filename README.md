@@ -202,18 +202,18 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
 The default root `/pwm/` is configurable for adding new channels via the
 `--osc-roots` parameter.
 
-You can test OSC using the included `osc_msg.py` script. You can test that
+You can test OSC using the included `osc_client.py` utility. You can test that
 the server is receiving messages as follows:
 
 ```bash
-# On RPi on localhost, local network address 192.168.2.247
+# On RPi on localhost, local network address 192.168.2.247:5005
 ./plasma_controller.py --controller-type OSC -vv -f 10000
 
 # In a separate terminal screen same RPi
-./plasma/utils/osc_msg.py /pwm/center-frequency 10001
+./plasma/osc_client.py /pwm/center-frequency 10001
 
-# On another machine on the local network
-./plasma/utils/osc_msg.py --server 192.168.2.247:5005 /pwm/center-frequency 10001
+# From another machine on the local network
+./plasma/osc_client.py --host 192.168.2.247 /pwm/center-frequency 10001
 ```
 
 If it's successful, you should see output that looks like the following:

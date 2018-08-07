@@ -80,13 +80,15 @@ class BaseInterrupter(ABC):
 
     def set_frequency(self, value: Real) -> None:
         self.frequency = value
-    #
-    # def __str__(self):
-    #     return (f"{self.__class__.__name__}("
-    #             f"frequency={self.frequency}, "
-    #             f"duty_cycle={self.duty_cycle}, "
-    #             f"is_stopped={self.is_stopped}"
-    #             f"pwm={self.pwm!r})")
-    #
-    # def __repr__(self):
-    #     return f"<{self} at 0x{id(self):02X}>"
+
+    def __str__(self):
+        return (
+            "{}(frequency={}, duty_cycle={}, is_stopped={}, pwm={!r})".format(
+                self.__class__.__name__,
+                self.frequency,
+                self.duty_cycle,
+                self.is_stopped,
+                self.pwm))
+
+    def __repr__(self):
+        return "<{} at 0x{:02X}>".format(self, id(self))
