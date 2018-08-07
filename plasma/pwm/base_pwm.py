@@ -76,12 +76,15 @@ class BasePWM(ABC):
     def set_frequency(self, value: Real) -> None:
         self.frequency = value
 
-    # def __str__(self):
-    #     return (f"{self.__class__.__name__}("
-    #             f"frequency={self.frequency}, "
-    #             f"duty_cycle={self.duty_cycle}, "
-    #             f"is_stopped={self.is_stopped}"
-    #             f")")
-    #
-    # def __repr__(self):
-    #     return f"<{self} at 0x{id(self):02X}>"
+    def __str__(self):
+        return ("{}("
+                "frequency={}, "
+                "duty_cycle={}, "
+                "is_stopped={}"
+                ")".format(self.__class__.__name__,
+                           self.frequency,
+                           self.duty_cycle,
+                           self.is_stopped))
+
+    def __repr__(self):
+        return "<{} at 0x{:02X}>".format(self, id(self))

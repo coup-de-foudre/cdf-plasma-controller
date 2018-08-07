@@ -24,7 +24,8 @@ By default, root address for all commands is `pwm`. With this root, the
 following OSC:
 
     /pwm/start
-        Start the PWM, but does not turn on the interrupter or the FM modulator.
+        Start the PWM, but does not turn on the interrupter or the FM
+        modulator.
 
     /pwm/stop
         Turn the PWM off. Also turns the interrupter and FM modulator off.

@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
-
-from abc import ABC
 from numbers import Integral, Real
 
 import logging
@@ -34,14 +32,6 @@ logger = logging.getLogger(__name__)
 
 class PiPWMException(PWMException):
     pass
-
-
-class PigpioException(PiPWMException, ABC):
-    """All pigpio errors are registered as instances of this class"""
-    pass
-
-
-PigpioException.register(pigpio.error)
 
 
 class PiHardwarePWM(BasePWM):

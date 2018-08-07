@@ -1,4 +1,6 @@
 name: cdf-plasma-controller
+channels:
+  - conda-forge
 dependencies:
   - python=3.4
   - pip:

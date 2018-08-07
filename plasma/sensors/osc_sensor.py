@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 # Copyright 2018, Michael McCoy <michael.b.mccoy@gmail.com>
 #
@@ -17,9 +18,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
+"""Send OSC messages based on sensor input"""
+import sys
+import argparse
 
-pigpio
--e ./vendor/python-osc
-pytest
-tox
-typing
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument()
+    parser.add_argument(
+        "--server",
+        metavar="IP:PORT",
+        default="127.0.0.1:5005",
+        type=str,
+        help="The ip:port of the OSC server")
+
+
+if __name__ == '__main__':
+    sys.exit(main())

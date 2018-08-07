@@ -1,4 +1,3 @@
-#
 # Copyright 2018, Michael McCoy <michael.b.mccoy@gmail.com>
 #
 #
@@ -17,3 +16,4 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with the Cdf Plasma Controller.  If not, see
 # <http://www.gnu.org/licenses/>.
+

@@ -25,6 +25,8 @@ import sys
 
 from pythonosc import udp_client
 
+from plasma.utils import parse_bind_host
+
 
 def parse_into_type(parameter: str):
     """Parse a parameter into either a float, int, or string"""
@@ -48,12 +50,13 @@ def main():
         metavar="IP:PORT",
         default="127.0.0.1:5005",
         type=str,
-        help="The ip:port of the OSC server")
+        help="The host of the OSC server")
     parser.add_argument("address", help="Address for the message")
     parser.add_argument("value", nargs='*', help="Message values")
 
     args = parser.parse_args()
-    ip, port = args.server.split(':')
+
+    ip, port = parse_bind_host(args.server, 5005)
 
     client = udp_client.SimpleUDPClient(ip, int(port), allow_broadcast=True)
     client.send_message(args.address, map(parse_into_type, args.value))
