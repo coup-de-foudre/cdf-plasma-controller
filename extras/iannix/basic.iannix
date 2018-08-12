@@ -141,94 +141,18 @@ function onIncomingMessage(protocol, host, port, destination, values) {
  */
 function madeThroughGUI() {
 //GUI: NEVER EVER REMOVE THIS LINE
-	run("zoom 554.205");
+	run("zoom 360.6583421634555");
 	run("rotate 0 0 0");
 	run("speed 1");
-	run("center 26.0245 4.56569");
-
-
-	run("add curve 200");
-	run("setpos current 22.5 0 0");
-	var points200 = [
-		{x: -22.5, y: 0, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-		{x: 22.5, y: 0, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-	];
-	for(var i = 0 ; i < points200.length ; i++)
-		run("setpointat current " + i + " " + points200[i].x + " " + points200[i].y + " " + points200[i].z + " " + points200[i].c1x + " " + points200[i].c1y + " " + points200[i].c1z + " " + points200[i].c2x + " " + points200[i].c2y + " " + points200[i].c2z);
-	run("add cursor 201");
-	run("setcurve current lastCurve");
-	run("setpos current 4.42059 0 0");
-	run("setwidth current 20");
-	run("setboundssourcemode current 3");
-	run("setboundssource current 0.000 1.000 0.000 10.000 0.000 1.000");
-	run("setpattern current 0 0 1");
-	run("setmessage current 100, osc://192.168.1.255:5005/pwm2/fine/value collision_value_y ,");
-	run("settime current 38344.420587291665");
-
-
-	run("add curve 100");
-	run("setpos current 30 11 0");
-	var points100 = [
-		{x: -30, y: 11, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-		{x: 30, y: 11, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-	];
-	for(var i = 0 ; i < points100.length ; i++)
-		run("setpointat current " + i + " " + points100[i].x + " " + points100[i].y + " " + points100[i].z + " " + points100[i].c1x + " " + points100[i].c1y + " " + points100[i].c1z + " " + points100[i].c2x + " " + points100[i].c2y + " " + points100[i].c2z);
-	run("add cursor 101");
-	run("setcurve current lastCurve");
-	run("setpos current 4.42059 22 0");
-	run("setwidth current 20");
-	run("setboundssourcemode current 3");
-	run("setboundssource current 0.000 1.000 11.000 1110.000 0.000 1.000");
-	run("setpattern current 0 0 1");
-	run("setmessage current 100, osc://192.168.1.255:5005/pwm1/fine/value collision_value_y ,");
-	run("settime current 38344.420587291665");
-
-
-	run("add curve 400");
-	run("setpos current 7.5 -22 0");
-	var points400 = [
-		{x: -7.5, y: -22, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-		{x: 7.5, y: -22, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-	];
-	for(var i = 0 ; i < points400.length ; i++)
-		run("setpointat current " + i + " " + points400[i].x + " " + points400[i].y + " " + points400[i].z + " " + points400[i].c1x + " " + points400[i].c1y + " " + points400[i].c1z + " " + points400[i].c2x + " " + points400[i].c2y + " " + points400[i].c2z);
-	run("add cursor 401");
-	run("setcurve current lastCurve");
-	run("setpos current 4.42059 -44 0");
-	run("setwidth current 20");
-	run("setboundssourcemode current 3");
-	run("setboundssource current 0.000 1.000 -22.000 -2210.000 0.000 1.000");
-	run("setpattern current 0 0 1");
-	run("setmessage current 100, osc://192.168.1.255:5005/pwm4/fine/value collision_value_y ,");
-	run("settime current 38344.420587291665");
-
-
-	run("add curve 300");
-	run("setpos current 15 -11 0");
-	var points300 = [
-		{x: -15, y: -11, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-		{x: 15, y: -11, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-	];
-	for(var i = 0 ; i < points300.length ; i++)
-		run("setpointat current " + i + " " + points300[i].x + " " + points300[i].y + " " + points300[i].z + " " + points300[i].c1x + " " + points300[i].c1y + " " + points300[i].c1z + " " + points300[i].c2x + " " + points300[i].c2y + " " + points300[i].c2z);
-	run("add cursor 301");
-	run("setcurve current lastCurve");
-	run("setpos current 4.42059 -22 0");
-	run("setwidth current 20");
-	run("setboundssourcemode current 3");
-	run("setboundssource current 0.000 1.000 -11.000 -1110.000 0.000 1.000");
-	run("setpattern current 0 0 1");
-	run("setmessage current 100, osc://192.168.1.255:5005/pwm3/fine/value collision_value_y ,");
-	run("settime current 38344.420587291665");
+	run("center 21.3116 -2.74288");
 
 
 	run("add curve 3");
 	run("setpos current 0.249052 -0.00172746 0");
 	var points3 = [
-		{x: 0.0913143, y: -10.6837, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-		{x: 5.78871, y: 9.91893, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-		{x: 7.91433, y: 9.91893, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+		{x: -0.205807, y: 9.87703, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+		{x: 2.99578, y: -6.83866, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+		{x: 6.36931, y: -9.80986, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
 		{x: 11.8507, y: -10.2351, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
 		{x: 12.8741, y: -0.0793561, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
 		{x: 14.9997, y: 9.91893, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
@@ -256,10 +180,86 @@ function madeThroughGUI() {
 		{x: 37.3581, y: 9.05293, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
 		{x: 38.6177, y: 2.51862, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
 		{x: 42.0817, y: 3.30589, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
-		{x: 44.4338, y: -10.7118, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+		{x: 44.5526, y: 10.3243, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
 	];
 	for(var i = 0 ; i < points3.length ; i++)
 		run("setpointat current " + i + " " + points3[i].x + " " + points3[i].y + " " + points3[i].z + " " + points3[i].c1x + " " + points3[i].c1y + " " + points3[i].c1z + " " + points3[i].c2x + " " + points3[i].c2y + " " + points3[i].c2z);
+
+	run("add curve 300");
+	run("setpos current 15 -11 0");
+	var points300 = [
+		{x: -15, y: -11, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+		{x: 15, y: -11, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+	];
+	for(var i = 0 ; i < points300.length ; i++)
+		run("setpointat current " + i + " " + points300[i].x + " " + points300[i].y + " " + points300[i].z + " " + points300[i].c1x + " " + points300[i].c1y + " " + points300[i].c1z + " " + points300[i].c2x + " " + points300[i].c2y + " " + points300[i].c2z);
+	run("add cursor 301");
+	run("setcurve current lastCurve");
+	run("setpos current 0 -22 0");
+	run("setwidth current 20");
+	run("setboundssourcemode current 3");
+	run("setboundssource current 0.000 1.000 -11.000 -1110.000 0.000 1.000");
+	run("setpattern current 0 0 1");
+	run("setmessage current 100, osc://192.168.1.255:5005/pwm3/fine/value collision_value_y ,");
+	run("settime current 38344.420587291665");
+
+
+	run("add curve 100");
+	run("setpos current 30 11 0");
+	var points100 = [
+		{x: -30, y: 11, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+		{x: 30, y: 11, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+	];
+	for(var i = 0 ; i < points100.length ; i++)
+		run("setpointat current " + i + " " + points100[i].x + " " + points100[i].y + " " + points100[i].z + " " + points100[i].c1x + " " + points100[i].c1y + " " + points100[i].c1z + " " + points100[i].c2x + " " + points100[i].c2y + " " + points100[i].c2z);
+	run("add cursor 101");
+	run("setcurve current lastCurve");
+	run("setpos current 0 22 0");
+	run("setwidth current 20");
+	run("setboundssourcemode current 3");
+	run("setboundssource current 0.000 1.000 11.000 1110.000 0.000 1.000");
+	run("setpattern current 0 0 1");
+	run("setmessage current 100, osc://192.168.1.255:5005/pwm1/fine/value collision_value_y ,");
+	run("settime current 38344.420587291665");
+
+
+	run("add curve 400");
+	run("setpos current 7.5 -22 0");
+	var points400 = [
+		{x: -7.5, y: -22, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+		{x: 7.5, y: -22, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+	];
+	for(var i = 0 ; i < points400.length ; i++)
+		run("setpointat current " + i + " " + points400[i].x + " " + points400[i].y + " " + points400[i].z + " " + points400[i].c1x + " " + points400[i].c1y + " " + points400[i].c1z + " " + points400[i].c2x + " " + points400[i].c2y + " " + points400[i].c2z);
+	run("add cursor 401");
+	run("setcurve current lastCurve");
+	run("setpos current 0 -44 0");
+	run("setwidth current 20");
+	run("setboundssourcemode current 3");
+	run("setboundssource current 0.000 1.000 -22.000 -2210.000 0.000 1.000");
+	run("setpattern current 0 0 1");
+	run("setmessage current 100, osc://192.168.1.255:5005/pwm4/fine/value collision_value_y ,");
+	run("settime current 38344.420587291665");
+
+
+	run("add curve 200");
+	run("setpos current 22.5 0 0");
+	var points200 = [
+		{x: -22.5, y: 0, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+		{x: 22.5, y: 0, z: 0, c1x: 0, c1y: 0, c1z: 0, c2x: 0, c2y: 0, c2z: 0},
+	];
+	for(var i = 0 ; i < points200.length ; i++)
+		run("setpointat current " + i + " " + points200[i].x + " " + points200[i].y + " " + points200[i].z + " " + points200[i].c1x + " " + points200[i].c1y + " " + points200[i].c1z + " " + points200[i].c2x + " " + points200[i].c2y + " " + points200[i].c2z);
+	run("add cursor 201");
+	run("setcurve current lastCurve");
+	run("setpos current 0 0 0");
+	run("setwidth current 20");
+	run("setboundssourcemode current 3");
+	run("setboundssource current 0.000 1.000 0.000 10.000 0.000 1.000");
+	run("setpattern current 0 0 1");
+	run("setmessage current 100, osc://192.168.1.255:5005/pwm2/fine/value collision_value_y ,");
+	run("settime current 38344.420587291665");
+
 
 
 
