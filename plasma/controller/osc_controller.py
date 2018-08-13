@@ -24,7 +24,8 @@ By default, root address for all commands is `pwm`. With this root, the
 following OSC:
 
     /pwm/start
-        Start the PWM, but does not turn on the interrupter or the FM modulator.
+        Start the PWM, but does not turn on the interrupter or the FM
+        modulator.
 
     /pwm/stop
         Turn the PWM off. Also turns the interrupter and FM modulator off.
@@ -132,18 +133,16 @@ class OSCController(BaseController):
     Otherwise, you must manually call the .start() and .stop() methods.
     """
 
-    def __init__(self,
-                 osc_host: str,
-                 osc_port: int,
+    def __init__(self, osc_host: str, osc_port: int,
                  pwm_frequency_modulator: BaseModulator,
-                 interrupter: BaseInterrupter,
-                 address_roots: Iterable[str]= ('pwm',),
-                 ):
+                 interrupter: BaseInterrupter, fine_spread: float = 0.0,
+                 address_roots: Iterable[str] = ('pwm',)):
         """
         :param osc_host: The hostname for the OSC server to listen on
         :param osc_port: The port for the OSC server to listen on
         :param pwm_frequency_modulator: The frequency modulator for the PWM
         :param interrupter: The interrupter to use
+        :param fine_spread: The initial fine control spread in Hz.
         :param address_roots: The root addresses to bind (default: ['pwm']).
             Leading and trailing slashes have no effect, but multiple parts
             are allowed, e.g., `pwm/channel-01`.
@@ -160,7 +159,7 @@ class OSCController(BaseController):
         self._address_roots = list(r.strip('/') for r in address_roots)
 
         self._pwm_center_frequency = self._pwm.frequency
-        self._pwm_fine_spread = 0.0
+        self._pwm_fine_spread = fine_spread
         self._pwm_fine_value = 0.0
         self._set_pwm_frequency_with_fine_control()
         self._pwm.duty_cycle = self._pwm.duty_cycle

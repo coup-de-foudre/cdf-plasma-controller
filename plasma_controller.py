@@ -85,32 +85,38 @@ def parse_arguments() -> argparse.Namespace:
         help="frequency spread (Hz) of FM modulator (default: 1.0)",
     )
     parser.add_argument(
-        '-D',
+        '-D', '--interrupter-duty-cycle',
         dest='interrupter_duty_cycle',
         type=float,
         default=1.0,
         help="duty cycle of the interrupter (default: 1.0 == no interrupter)",
     )
     parser.add_argument(
-        '-F',
+        '-F', '--interrupter-frequency',
         dest='interrupter_frequency',
         type=float,
         default=100.0,
         help="frequency (Hz) of the interrupter (default: 100.0)",
     )
     parser.add_argument(
-        '-d',
+        '-d', '--pwm-duty-cycle',
         dest='pwm_duty_cycle',
         type=float,
         default=0.5,
         help="duty cycle of the PWM (default: 0.5)",
     )
     parser.add_argument(
-        '-f',
+        '-f', '--pwm-frequency',
         dest='pwm_frequency',
         type=float,
         help="frequency of the PWM",
         required=True
+    )
+    parser.add_argument(
+        '-S', '--fine-spread',
+        dest='fine_spread',
+        type=float,
+        help="spread of the fine control in Hz",
     )
     parser.add_argument(
         '-r', '--osc-roots',
@@ -120,7 +126,8 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         '-v', '--verbose',
         action="count",
-        help="Enable verbose logging. Repeat up to three times for more logging"
+        help="Enable verbose logging. "
+             "Repeat up to three times for more logging"
     )
     return parser.parse_args()
 
@@ -181,6 +188,8 @@ def get_controller(args: argparse.Namespace) -> BaseController:
                                     args.interrupter_frequency,
                                     args.interrupter_duty_cycle)
 
+    fine_spread = args.fine_spread
+
     modulator = CallbackModulator(
         lambda f: pwm.set_frequency(f),
         frequency=args.modulator_frequency,
@@ -193,11 +202,9 @@ def get_controller(args: argparse.Namespace) -> BaseController:
         controller = KeyboardController(modulator, interrupter)
     elif args.controller_type == "OSC":
         host, port = parse_bind_host(args.osc_bind)
-        controller = OSCController(host,
-                                   port,
-                                   modulator,
-                                   interrupter,
-                                   args.osc_roots.split(','))
+        controller = OSCController(host, port, modulator, interrupter,
+                                   fine_spread=fine_spread,
+                                   address_roots=args.osc_roots.split(','))
     else:
         raise ValueError("Unknown controller type %s", args.controller_type)
 
