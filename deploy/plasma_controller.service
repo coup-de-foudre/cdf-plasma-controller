@@ -1,0 +1,13 @@
+[Unit]
+Description=CDF Plasma Controller
+
+[Service]
+ExecStart=/home/pi/cdf-plasma-controller/plasma_controller.py
+Restart=always
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
+Alias=plasma_controller.service

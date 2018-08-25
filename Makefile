@@ -7,3 +7,11 @@ test: docker
 
 docker: Dockerfile
 	docker build -t $(IMAGE) .
+
+.PHONY: daemon
+daemon:
+	sudo cp ./deploy/plasma_controller.service /lib/systemd/system/plasma_controller.service
+	sync
+	sudo systemctl daemon-reload
+	sudo systemctl enable plasma_controller
+	sudo systemctl start plasma_controller
