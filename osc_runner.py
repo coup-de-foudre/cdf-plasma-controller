@@ -45,7 +45,8 @@ def cpu_serial() -> Union[str, None]:
         for line in fp:
             if line.startswith('Serial'):
                result = line.split(':')[1].strip()
-    _logger().warn("Unable to get serial number")
+    if result is None:
+        _logger().warn("Unable to get serial number")
     return result
 
 
