@@ -11,8 +11,11 @@ docker: Dockerfile
 .PHONY: daemon
 daemon:
 	sudo cp ./deploy/plasma_controller.service /lib/systemd/system/plasma_controller.service
+	sudo cp ./deploy/pigpiod.service /lib/systemd/system/pigpiod.service
 	sync
 	sudo systemctl daemon-reload
+	sudo systemctl enable pigpiod
+	sudo systemctl start pigpiod
 	sudo systemctl enable plasma_controller
 	sudo systemctl start plasma_controller
 

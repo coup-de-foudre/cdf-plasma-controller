@@ -1,0 +1,14 @@
+[Unit]
+Description=PiGPIO Deamon Service
+Documentation=man:pigpoid(1)
+
+[Service]
+ExecStart=/usr/local/bin/pigpiod
+Restart=always
+RestartSec=0
+NotifyAccess=all
+WatchdogSec=1min
+
+[Install]
+WantedBy=multi-user.target
+Alias=pigpiod.service
