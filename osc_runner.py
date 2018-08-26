@@ -123,7 +123,7 @@ def configure_controller(config_file: str=_DEFAULT_CONFIG) \
     pwm.frequency = config.getfloat(section, "center_frequency")
     pwm.duty_cycle = 1.0
 
-    interrupter_frequency = 0.0
+    interrupter_frequency = 100.0
     interrupter_duty_cycle = 1.0
     interrupter = SimpleInterrupter(pwm,
                                     interrupter_frequency,
