@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 import sys
 import os
+import glob
+
 from configparser import ConfigParser
 from argparse import ArgumentParser
 import logging
-
 from typing import Dict, Union, Tuple
+
+# Hack the dependency management
+_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+if _BASE_PATH not in sys.path:
+    sys.path += [_BASE_PATH]
+for vendor_path in glob.glob(os.path.join(_BASE_PATH, 'vendor', '*')):
+    if vendor_path not in sys.path:
+        sys.path += [vendor_path]
 
 from plasma.controller.base_controller import BaseController
 from plasma.controller.osc_controller import OSCController
