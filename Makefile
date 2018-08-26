@@ -13,7 +13,6 @@ pigpio-daemon:
 	sudo cp pigpio/util/pigpiod /etc/init.d
 	sudo chmod +x /etc/init.d/pigpiod
 	sudo update-rc.d pigpiod defaults
-	sudo service pigpiod enable
 	sudo service pigpiod start
 
 .PHONY: daemon
