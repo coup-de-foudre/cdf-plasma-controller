@@ -31,7 +31,13 @@ from plasma.controller.osc_controller import OSCController
 from plasma.interrupter.simple_interrupter import SimpleInterrupter
 from plasma.modulator.callback_modulator import CallbackModulator
 from plasma.pwm.mock_pwm import MockPWM
-from plasma.pwm.pi_pwm import PiHardwarePWM
+try:
+    from plasma.pwm.pi_pwm import PiHardwarePWM
+except ImportError as e:
+    print("Unable to import PiHardwarePWM; "
+          "falling back to MockPWM: {}".format(e),
+          file=sys.stderr)
+    PiHardwarePWM = MockPWM
 
 
 def parse_arguments() -> argparse.Namespace:

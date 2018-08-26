@@ -15,3 +15,7 @@ daemon:
 	sudo systemctl daemon-reload
 	sudo systemctl enable plasma_controller
 	sudo systemctl start plasma_controller
+
+.PHONY: logs
+logs:
+	sudo journalctl _SYSTEMD_UNIT=plasma_controller.service
