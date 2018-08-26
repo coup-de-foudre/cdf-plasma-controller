@@ -18,4 +18,4 @@ daemon:
 
 .PHONY: logs
 logs:
-	sudo journalctl _SYSTEMD_UNIT=plasma_controller.service
+	sudo journalctl --follow -n 50 _SYSTEMD_UNIT=plasma_controller.service
