@@ -10,7 +10,7 @@ docker: Dockerfile
 
 .PHONY: pigpio-daemon
 pigpio-daemon:
-	cp pigpio/util/pigpiod /etc/init.d
+	sudo cp pigpio/util/pigpiod /etc/init.d
 	sudo chmod +x /etc/init.d/pigpiod
 	sudo update-rc.d pigpiod defaults
 	sudo service pigpiod enable
