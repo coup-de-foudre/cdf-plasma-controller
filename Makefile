@@ -15,6 +15,10 @@ pigpio-daemon:
 	sudo update-rc.d pigpiod defaults
 	sudo service pigpiod start
 
+.PHONY: pigpio
+pigpio:
+	cd pigpio; make && sudo make install
+
 .PHONY: daemon
 daemon: pigpio-daemon
 	sudo cp ./deploy/plasma_controller.service /lib/systemd/system/plasma_controller.service
