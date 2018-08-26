@@ -8,14 +8,19 @@ test: docker
 docker: Dockerfile
 	docker build -t $(IMAGE) .
 
+.PHONY: pigpio-daemon
+pigpio-daemon:
+	cp pigpio/util/pigpiod /etc/init.d
+	sudo chmod +x /etc/init.d/pigpiod
+	sudo update-rc.d pigpiod defaults
+	sudo service pigpiod enable
+	sudo service pigpiod start
+
 .PHONY: daemon
-daemon:
+daemon: pigpio-daemon
 	sudo cp ./deploy/plasma_controller.service /lib/systemd/system/plasma_controller.service
-	sudo cp ./deploy/pigpiod.service /lib/systemd/system/pigpiod.service
 	sync
 	sudo systemctl daemon-reload
-	sudo systemctl enable pigpiod
-	sudo systemctl start pigpiod
 	sudo systemctl enable plasma_controller
 	sudo systemctl start plasma_controller
 
