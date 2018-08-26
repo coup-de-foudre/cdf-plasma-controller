@@ -146,7 +146,9 @@ def configure_controller(config_file: str=_DEFAULT_CONFIG) \
     host, port = parse_bind_host(config.get(section, "osc_bind"))
     controller = OSCController(host, port, modulator, interrupter,
                                fine_spread=fine_spread,
-                               address_roots=osc_roots.split(','))
+                               address_roots=osc_roots.split(','),
+                               immediate_on=True,
+    )
     return controller
 
 

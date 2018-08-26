@@ -136,7 +136,9 @@ class OSCController(BaseController):
     def __init__(self, osc_host: str, osc_port: int,
                  pwm_frequency_modulator: BaseModulator,
                  interrupter: BaseInterrupter, fine_spread: float = 0.0,
-                 address_roots: Iterable[str] = ('pwm',)):
+                 address_roots: Iterable[str] = ('pwm',),
+                 immediate_on: bool=False,
+    ):
         """
         :param osc_host: The hostname for the OSC server to listen on
         :param osc_port: The port for the OSC server to listen on
@@ -146,6 +148,7 @@ class OSCController(BaseController):
         :param address_roots: The root addresses to bind (default: ['pwm']).
             Leading and trailing slashes have no effect, but multiple parts
             are allowed, e.g., `pwm/channel-01`.
+        :param immediate_on: Turn on the PWM upon initialization (default: False)
         """
         self.logger = logging.getLogger(__name__)
         self.logger.debug("%s", locals())
@@ -163,6 +166,8 @@ class OSCController(BaseController):
         self._pwm_fine_value = 0.0
         self._set_pwm_frequency_with_fine_control()
         self._pwm.duty_cycle = self._pwm.duty_cycle
+
+        self._immediate_on = immediate_on
 
     def _set_pwm_frequency_with_fine_control(self) -> None:
         self._pwm.frequency = (self._pwm_center_frequency +
@@ -314,10 +319,13 @@ class OSCController(BaseController):
 
     def start(self) -> None:
         """Start the PWM"""
-        self.logger.info("Starting OSC controller, but PWM will not start "
-                         "until a start command is received.")
         self._interrupter.start()
-        # self._pwm_frequency_modulator.start()
+        if self._immediate_on:
+            self.logger.warning("Turning on PWM immediately")
+            self._pwm.start()
+        else:
+            self.logger.info("Starting OSC controller, but PWM will not start "
+                             "until a start command is received.")
 
     def shutdown(self) -> None:
         """Gracefully stop the pwm"""
