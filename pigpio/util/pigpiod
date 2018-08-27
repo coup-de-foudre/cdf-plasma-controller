@@ -12,6 +12,7 @@
 # Actions
 case "$1" in
   start)
+    sleep 10
     pigpiod
     ;;
   stop)
