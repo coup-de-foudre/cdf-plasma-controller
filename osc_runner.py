@@ -115,6 +115,8 @@ def configure_controller(config_file: str=_DEFAULT_CONFIG) \
 
     pin = config.getint(section, "pin")
     host = config.get(section, "host")
+    if not host:
+        host = None
 
     if config.getboolean(section, "mock"):
         pwm = MockPWM()
