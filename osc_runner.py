@@ -124,7 +124,7 @@ def configure_controller(config_file: str=_DEFAULT_CONFIG) \
         pwm = PiHardwarePWM(pin, host)
 
     pwm.frequency = config.getfloat(section, "center_frequency")
-    pwm.duty_cycle = 1.0
+    pwm.duty_cycle = 0.5
 
     interrupter_frequency = 100.0
     interrupter_duty_cycle = 1.0
