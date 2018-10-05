@@ -1,0 +1,14 @@
+[Unit]
+Description=CDF Plasma Controller
+Requires=pigpiod.service
+
+[Service]
+ExecStart=/home/pi/cdf-plasma-controller/osc_runner.py -vvv
+Restart=always
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
+Alias=plasma_controller.service

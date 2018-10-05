@@ -26,13 +26,14 @@ from .base_pwm import BasePWM
 
 class MockPWM(BasePWM):
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self._logger = logging.getLogger(__name__)
         self._debug = self._logger.debug
         self._info = self._logger.info
         self._duty_cycle = 0.5
         self._frequency = 1.0
         self._is_stopped = False
+        self._logger.debug("args={}, kwargs={}".format(args, kwargs))
 
     @property
     def duty_cycle(self) -> Real:
