@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-import sys
-import os
 import glob
-
-from configparser import ConfigParser
-from argparse import ArgumentParser
 import logging
-from typing import Dict, Union, Tuple
+import os
+import sys
+from argparse import ArgumentParser
+from configparser import ConfigParser
+from typing import Union, Tuple
 
 # Hack the dependency management
 _BASE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -44,9 +43,9 @@ def cpu_serial() -> Union[str, None]:
     with open('/proc/cpuinfo', 'r') as fp:
         for line in fp:
             if line.startswith('Serial'):
-               result = line.split(':')[1].strip()
+                result = line.split(':')[1].strip()
     if result is None:
-        _logger().warn("Unable to get serial number")
+        _logger().warning("Unable to get serial number")
     return result
 
 
@@ -98,7 +97,7 @@ def configure_controller(config_file: str=_DEFAULT_CONFIG) \
         -> BaseController:
 
     _logger().info("Reading configuration file %s", config_file)
-    config=ConfigParser()
+    config = ConfigParser()
     with open(config_file, "r") as fp:
         config.read_file(fp)
 
@@ -106,7 +105,7 @@ def configure_controller(config_file: str=_DEFAULT_CONFIG) \
     _logger().debug("Got serial number %s", serial)
     if serial is None:
         section = "MOCK"
-        _logger().warn("No serial number; using section %s", section)
+        _logger().warning("No serial number; using section %s", section)
     else:
         section = serial
 
@@ -124,7 +123,7 @@ def configure_controller(config_file: str=_DEFAULT_CONFIG) \
         pwm = PiHardwarePWM(pin, host)
 
     pwm.frequency = config.getfloat(section, "center_frequency")
-    pwm.duty_cycle = 0.5
+    pwm.duty_cycle = config.getfloat(section, "duty_cycle")
 
     interrupter_frequency = 100.0
     interrupter_duty_cycle = 1.0
@@ -145,11 +144,15 @@ def configure_controller(config_file: str=_DEFAULT_CONFIG) \
     fine_spread = config.getfloat(section, "frequency_spread")
     osc_bind = config.get(section, "osc_bind")
     osc_roots = config.get(section, "osc_roots")
-    host, port = parse_bind_host(config.get(section, "osc_bind"))
-    controller = OSCController(host, port, modulator, interrupter,
-                               fine_spread=fine_spread,
-                               address_roots=osc_roots.split(','),
-                               immediate_on=True,
+    host, port = parse_bind_host(osc_bind)
+    controller = OSCController(
+        host,
+        port,
+        modulator,
+        interrupter,
+        fine_spread=fine_spread,
+        address_roots=osc_roots.split(','),
+        immediate_on=True,
     )
     return controller
 
