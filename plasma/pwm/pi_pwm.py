@@ -42,8 +42,8 @@ class PiHardwarePWM(BasePWM):
 
     def __init__(self,
                  gpio_pin: Integral,
-                 host: str=None,
-                 port: Integral='8888'):
+                 host: str = None,
+                 port: Integral = '8888'):
 
         if host is None:
             self._pi = pigpio.pi()
