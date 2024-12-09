@@ -125,9 +125,9 @@ def parse_arguments() -> argparse.Namespace:
         help="spread of the fine control in Hz",
     )
     parser.add_argument(
-        '-r', '--osc-roots',
-        default="pwm",
-        help="OSC address roots to bind, separated by commas (default: pwm)",
+        '-r', '--osc-root',
+        default="pwm0",
+        help="OSC address root to bind (default: pwm0)",
     )
     parser.add_argument(
         '-v', '--verbose',
@@ -138,7 +138,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def set_up_logging(verbosity_level: int=0):
+def set_up_logging(verbosity_level: int = 0):
     """Set up custom log formats and levels based on verbosity"""
 
     if verbosity_level is None:
@@ -170,7 +170,7 @@ def set_up_logging(verbosity_level: int=0):
 
 
 def parse_bind_host(osc_bind_arg: str,
-                    default_port: int=5005) -> Tuple[str, int]:
+                    default_port: int = 5005) -> Tuple[str, int]:
     """Parse OSC bind argument "host:port" into (host, port)"""
     parts = osc_bind_arg.split(':')
     host = parts[0]
@@ -208,9 +208,14 @@ def get_controller(args: argparse.Namespace) -> BaseController:
         controller = KeyboardController(modulator, interrupter)
     elif args.controller_type == "OSC":
         host, port = parse_bind_host(args.osc_bind)
-        controller = OSCController(host, port, modulator, interrupter,
-                                   fine_spread=fine_spread,
-                                   address_roots=args.osc_roots.split(','))
+        controller = OSCController(
+            host,
+            port,
+            [modulator],
+            [interrupter],
+            fine_spreads=[fine_spread],
+            address_roots=[args.osc_root],
+        )
     else:
         raise ValueError("Unknown controller type %s", args.controller_type)
 

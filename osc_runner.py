@@ -82,7 +82,7 @@ def set_up_logging(verbosity_level: int=0) -> None:
 
 
 def parse_bind_host(osc_bind_arg: str,
-                    default_port: int=5005) -> Tuple[str, int]:
+                    default_port: int = 5005) -> Tuple[str, int]:
     """Parse OSC bind argument "host:port" into (host, port)"""
     parts = osc_bind_arg.split(':')
     host = parts[0]
@@ -93,7 +93,7 @@ def parse_bind_host(osc_bind_arg: str,
     return host, port
 
 
-def configure_controller(config_file: str=_DEFAULT_CONFIG) \
+def configure_controller(config_file: str = _DEFAULT_CONFIG) \
         -> BaseController:
 
     _logger().info("Reading configuration file %s", config_file)
@@ -150,7 +150,7 @@ def configure_controller(config_file: str=_DEFAULT_CONFIG) \
         port,
         modulator,
         interrupter,
-        fine_spread=fine_spread,
+        fine_spreads=fine_spread,
         address_roots=osc_roots.split(','),
         immediate_on=True,
     )

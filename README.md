@@ -125,23 +125,23 @@ protocol.
 To enable OSC, setting the `--controller-type=OSC` flag on the command line.
 This starts a OSC server on UDP port `5005` with the following endpoints:
 
-  - `/pwm/start`
+  - `/pwm0/start`
     Start the PWM, but does not turn on the interrupter or the FM modulator.
 
-  - `/pwm/stop`
+  - `/pwm0/stop`
     Stop the PWM Also turns the interrupter and FM modulator off.
 
-  - `/pwm/toggle <value>`
+  - `/pwm0/toggle <value>`
     Toggle based on the value of the argument. No argument or a
     "falsey" value turns stops, while a "truthy" value starts.
 
-  - `/pwm/center-frequency <float>`
+  - `/pwm0/center-frequency <float>`
      PWM center frequency in Hz. Resets the fine control value to zero.
 
-  - `/pwm/fine/spread <float>`
+  - `/pwm0/fine/spread <float>`
     Set fine control frequency spread around the center frequency
 
-  - `/pwm/fine/value <float>`
+  - `/pwm0/fine/value <float>`
     Set fine control frequency value. Value is capped between [-1, 1].
     The true frequency is given by
 
@@ -149,7 +149,7 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
 
     where spread is set with /pwm/fine/spread.
     
-  - `/pwm/frequency-offset-factor <float>`
+  - `/pwm0/frequency-offset-factor <float>`
     Offset factor for the center frequency. Should be between [-1, 1].
     The true frequency is given by
 
@@ -162,45 +162,45 @@ This starts a OSC server on UDP port `5005` with the following endpoints:
 
     Use of this endpoint immediately stops the FM modulator.
 
-  - `/pwm/duty-cycle <float>`
+  - `/pwm0/duty-cycle <float>`
     Set the PWM duty cycle. Settings other than 0.5 (the default) create a DC 
     offset in the output, which may damage some circuit configurations. 
 
-  - `/pwm/fm/start`
+  - `/pwm0/fm/start`
     Start FM modulation.
 
-  - `/pwm/fm/stop`
+  - `/pwm0/fm/stop`
     Stop FM modulation.
 
-  - `/pwm/fm/toggle <value>`
+  - `/pwm0/fm/toggle <value>`
     Toggle based on the value of the argument. No argument or a
     "falsey" value turns stops, while a "truthy" value starts.
 
-  - `/pwm/fm/spread <float>`
+  - `/pwm0/fm/spread <float>`
     Set the PWM FM spread in Hz.
 
-  - `/pwm/fm/frequency <float>`
+  - `/pwm0/fm/frequency <float>`
     Set the PWM FM frequency in Hz. Use of this endpoint starts the FM
     modulation.
 
-  - `/pwm/interrupter/start`
+  - `/pwm0/interrupter/start`
     Start the interrupter.
 
-  - `/pwm/interrupter/stop`
+  - `/pwm0/interrupter/stop`
     Stop the interrupter.
 
-  - `/pwm/interrupter/toggle <value>`
+  - `/pwm0/interrupter/toggle <value>`
     Toggle based on the value of the argument. No argument or a
     "falsey" value turns stops, while a "truthy" value starts.
   
-  - `/pwm/interrupter/frequency <float>`
+  - `/pwm0/interrupter/frequency <float>`
     Interrupter frequency in Hz.
 
-  - `/pwm/interrupter/duty-cycle <float>`
+  - `/pwm0/interrupter/duty-cycle <float>`
     Interrupter duty cycle in Hz.
     
-The default root `/pwm/` is configurable for adding new channels via the
-`--osc-roots` parameter.
+The default root `/pwm0/` is configurable for adding new channels via the
+`--osc-root` parameter.
 
 You can test OSC using the included `osc_msg.py` script. You can test that
 the server is receiving messages as follows:
@@ -210,10 +210,10 @@ the server is receiving messages as follows:
 ./plasma_controller.py --controller-type OSC -vv -f 10000
 
 # In a separate terminal screen same RPi
-./plasma/utils/osc_msg.py /pwm/center-frequency 10001
+./plasma/utils/osc_msg.py /pwm0/center-frequency 10001
 
 # On another machine on the local network
-./plasma/utils/osc_msg.py --server 192.168.2.247:5005 /pwm/center-frequency 10001
+./plasma/utils/osc_msg.py --server 192.168.2.247:5005 /pwm0/center-frequency 10001
 ```
 
 If it's successful, you should see output that looks like the following:
