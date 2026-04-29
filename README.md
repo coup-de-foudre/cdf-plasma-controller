@@ -18,14 +18,18 @@ cd cdf-plasma-controller/
 ```
 
 
-#### Install `python3` with `pip` and the requirements
+#### Install `uv` and the project dependencies
 
-We require Python3 and pip, which you have to install:
+We use [uv](https://docs.astral.sh/uv/) to manage the Python environment and
+dependencies. Install it (see the [uv install docs](https://docs.astral.sh/uv/getting-started/installation/)),
+then from the repo root run:
 
 ```
-sudo apt-get update && sudo apt-get install -y python3-pip
-sudo pip3 install -r requirements.txt
+uv sync
 ```
+
+This creates a `.venv` in the project directory with all dependencies
+installed (including the vendored `python-osc` at `vendor/python-osc`).
 
 #### Install `pigpio` from source and start the daemon
 
@@ -78,12 +82,11 @@ for more details.
 
 ### On a client machine external to the Raspberry Pi
 
-If you want to run over a network, you'll need to have Python 3.4 or greater 
-(preferably 3.6) and `pip3` installed on the client machine. (Google it.) Then
-clone this repo and run
+If you want to run over a network, you'll need [uv](https://docs.astral.sh/uv/)
+installed on the client machine. Then clone this repo and run
 
 ```
-sudo pip3 install -r requirements.txt
+uv sync
 ```
 
 You should now be able to connect to a remote Raspberry Pi running the
@@ -96,7 +99,7 @@ There are two ways to control the PWM, either via the keyboard or
 using the Open Sound Control protocol. The next two sections
 provide examples of using it both ways.
 
-For the full range of options, see `./plasma_controller.py -h`.
+For the full range of options, see `uv run ./plasma_controller.py -h`.
 
 
 ### Using the keyboard
@@ -107,7 +110,7 @@ have this package installed on a Raspberry Pi following the directions
 above, try running the PWM with an initial frequency of 10000 Hz:
 
 ```bash
-./plasma_controller.py -f 10000.0
+uv run ./plasma_controller.py -f 10000.0
 ```
 
 You'll see a screen that looks like this:
@@ -207,13 +210,13 @@ the server is receiving messages as follows:
 
 ```bash
 # On RPi on localhost, local network address 192.168.2.247
-./plasma_controller.py --controller-type OSC -vv -f 10000
+uv run ./plasma_controller.py --controller-type OSC -vv -f 10000
 
 # In a separate terminal screen same RPi
-./plasma/utils/osc_msg.py /pwm/center-frequency 10001
+uv run ./plasma/utils/osc_msg.py /pwm/center-frequency 10001
 
 # On another machine on the local network
-./plasma/utils/osc_msg.py --server 192.168.2.247:5005 /pwm/center-frequency 10001
+uv run ./plasma/utils/osc_msg.py --server 192.168.2.247:5005 /pwm/center-frequency 10001
 ```
 
 If it's successful, you should see output that looks like the following:
@@ -233,7 +236,7 @@ DEBUG:controller.osc_controller:{'offset_factor': None, 'center_frequency': 1000
 cycle.
 
     ```bash
-    ./plasma_controller.py -F 100 -D 0.3 -f 30000
+    uv run ./plasma_controller.py -F 100 -D 0.3 -f 30000
     ```
     > **NOTE** Running interruption over a network is not recommended, since 
     > network latency will significantly affect the interruption rate.
@@ -241,14 +244,14 @@ cycle.
 1. Control the RPi at address 192.168.2.247 on pin 12 at 15kHz.
 
     ```bash
-    ./plasma_controller.py --pin 12 --host 192.168.2.247 -f 15000
+    uv run ./plasma_controller.py --pin 12 --host 192.168.2.247 -f 15000
     ```
 
 1. Start an OSC controller with initial frequency of 83.3MHz with root `pwm1`
    and verbose logging:
 
     ```bash
-    ./plasma_controller.py --controller-type OSC -f 83300000 -r pwm1 -vvv
+    uv run ./plasma_controller.py --controller-type OSC -f 83300000 -r pwm1 -vvv
     ```
 
 

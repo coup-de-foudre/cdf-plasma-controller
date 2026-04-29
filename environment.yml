@@ -1,5 +1,0 @@
-name: cdf-plasma-controller
-dependencies:
-  - python=3.4
-  - pip:
-    - "-r requirements.txt"

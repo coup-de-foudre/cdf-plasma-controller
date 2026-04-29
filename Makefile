@@ -1,9 +1,12 @@
 IMAGE = plasma
 
-.PHONY: docker test
+.PHONY: docker test lint
 
-test: docker
-	docker run $(IMAGE) tox
+test:
+	uv run pytest
+
+lint:
+	uv run flake8 plasma/ tests/
 
 docker: Dockerfile
 	docker build -t $(IMAGE) .
