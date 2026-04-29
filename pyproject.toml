@@ -1,0 +1,33 @@
+[project]
+name = "cdf-plasma-controller"
+version = "0.1.0"
+description = "Raspberry Pi-based PWM controller for plasma tubes that support the Open Sound Control (OSC) protocol."
+readme = "README.md"
+license = { text = "AGPL-3.0-or-later" }
+authors = [
+    { name = "Michael McCoy", email = "michael.b.mccoy@gmail.com" },
+]
+requires-python = ">=3.9"
+dependencies = [
+    "pigpio",
+    "python-osc",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "flake8",
+]
+
+[tool.uv.sources]
+python-osc = { path = "vendor/python-osc", editable = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["plasma"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,14 +1,13 @@
-FROM themattrix/tox-base
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
-MAINTAINER Mike McCoy michael.b.mccoy@gmail.com
+LABEL maintainer="Mike McCoy <michael.b.mccoy@gmail.com>"
 
-COPY install-prereqs*.sh requirements*.txt tox.ini /app/
+WORKDIR /app
+
+COPY pyproject.toml uv.lock* ./
 COPY vendor /app/vendor
-ARG SKIP_TOX=true
-RUN bash -c " \
-    if [ -f '/app/install-prereqs.sh' ]; then \
-        bash /app/install-prereqs.sh; \
-    fi && \
-    if [ $SKIP_TOX == false ]; then \
-        TOXBUILD=true tox; \
-    fi"
+COPY plasma /app/plasma
+COPY tests /app/tests
+COPY plasma_controller.py osc_runner.py ./
+
+RUN uv sync --frozen --no-dev || uv sync --no-dev
