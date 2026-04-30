@@ -1,0 +1,15 @@
+[Unit]
+Description=CDF Plasma Score Player
+Requires=plasma_controller.service
+After=plasma_controller.service
+
+[Service]
+ExecStart=/home/pi/cdf-plasma-controller/score_player.py -vvv
+Restart=always
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
+Alias=plasma_player.service
