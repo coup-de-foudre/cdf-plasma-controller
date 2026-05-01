@@ -3,6 +3,13 @@
 \#*\#
 *~
 
+# Raw IanniX captures used to derive scores/*.csv. Regenerate with
+# extras/iannix/osc_sink.py if you need them.
+scores/capture/
+# Localhost-rewritten copy of the IanniX score; regenerable via
+# extras/iannix/rewrite_for_localhost.py.
+extras/iannix/*.localhost.iannix
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/

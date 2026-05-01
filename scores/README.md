@@ -47,26 +47,61 @@ To produce a "duration + hold" effect, write two rows with the same value:
 Hand-author a CSV. Anything that produces a sequence of `(time, value)`
 rows works — a spreadsheet, a Python script, or text-edit by hand.
 
-## Re-extracting from the IAnnix score
+## Re-deriving from the IAnnix score
 
-```
-python3 extras/iannix/extract_scores.py
-```
+The scores in this directory were produced by capturing the actual OSC
+output from a running IAnnix session (rather than reverse-engineering the
+score's geometry from the source). To regenerate from scratch:
 
-This reads `extras/iannix/P-Tubes_w-SC_MM_G-2.iannix` and writes one CSV
-per cursor it finds.
+1. **Build IAnnix** (one-time). Mac: `brew install qt@5`, then clone
+   <https://github.com/buzzinglight/IanniX> and run `qmake && make`. Two
+   small source patches are needed on Apple Silicon to skip the x86_64-only
+   Syphon framework — see `IanniX.pro:170` and `render/uirender.cpp:45` in
+   that build for the pattern.
 
-**Caveat**: the extractor is best-effort. IAnnix's `collision_value_y`
-involves cursor-vs-trigger-curve geometry that the extractor does not
-faithfully replicate. The current implementation:
+2. **Rewrite the production score for localhost** (so packets land on this
+   Mac instead of the gallery LAN broadcast):
 
-1. Parses each cursor's associated base curve from the IAnnix file.
-2. Walks the curve at speed 1 (matching the IAnnix `speed` setting).
-3. Maps each vertex's y-coordinate through the cursor's
-   `setboundssource` y-range into `[-1, 1]`.
+   ```
+   python3 extras/iannix/rewrite_for_localhost.py \
+       extras/iannix/P-Tubes_w-SC_MM_G-2.iannix \
+       extras/iannix/P-Tubes_w-SC_MM_G-2.localhost.iannix
+   ```
 
-For tubes whose IAnnix base curve is a flat horizontal line, this yields a
-constant score (logged as `[FLAT]` when running the extractor). The
-artistic content for those tubes likely came from cursor/trigger-curve
-geometry that this extractor doesn't replicate. Treat the output as a
-starting point and edit the CSVs by hand to match the intended performance.
+3. **Capture one full loop** with the OSC sink:
+
+   ```
+   python3 extras/iannix/osc_sink.py --duration 130 --out scores/capture
+   ```
+
+   In IAnnix: File → Open → the `*.localhost.iannix` copy, then play. The
+   sink streams each `/<root>/fine/value` message into a per-tube CSV under
+   `scores/capture/`. (That directory is gitignored — it's bulky and
+   regenerable.)
+
+4. **Simplify the captures** into committable scores:
+
+   ```
+   python3 extras/iannix/finalize_captures.py --tol 5e-3 --pad-to 120.0
+   ```
+
+   This trims to one loop (120 s), runs Ramer–Douglas–Peucker simplification
+   at the given tolerance (each retained point reflects a real >tol
+   deviation in the captured signal), drops any trailing duplicate near the
+   loop boundary, and pads each file to end at exactly `(120, first_value)`
+   so all tubes loop continuously and have identical duration. A built-in
+   tail-smoothing rule for `pwm5` flattens an IAnnix loop-wrap discontinuity
+   that would otherwise stress the driver electronics; pass
+   `--smooth-tail-from pwm5:0` to disable.
+
+5. **Verify** by overlaying capture vs simplified score:
+
+   ```
+   python3 extras/iannix/plot_scores.py --out docs/scores_vs_capture.png
+   ```
+
+`extras/iannix/extract_scores.py` is the original regex-based extractor.
+It guesses which `var pointsN` array drives each cursor and produces flat
+output for tubes whose base curves are flat horizontal lines — kept for
+reference but no longer the source of truth. Use the capture flow above
+instead.
