@@ -90,6 +90,61 @@ You should now be able to connect to a remote Raspberry Pi running the
 `pigpiod` daemon. 
 
 
+## Updating deployed Pis
+
+Once code lands on `master`, deployed Pis need to pull the new commits
+and restart the systemd services. Two equivalent paths.
+
+### One Pi at a time (manual)
+
+SSH in and run `make deploy`:
+
+```
+ssh pi@192.168.1.11        # use the Pi's IP for the tube you're updating
+cd ~/cdf-plasma-controller
+git pull
+sudo make deploy
+```
+
+`make deploy` reinstalls Python deps from `requirements.txt`, refreshes
+both `plasma_controller.service` and `plasma_player.service`, runs
+`systemctl daemon-reload`, and restarts both services so the new code
+takes effect immediately.
+
+To watch logs after the restart:
+
+```
+sudo journalctl -u plasma_controller -f       # PWM controller
+sudo journalctl -u plasma_player -f           # score player
+```
+
+Or via the Makefile shortcuts: `make logs` and `make player-logs`.
+
+### Whole fleet (laptop-side)
+
+From a laptop on the same LAN as the gallery network:
+
+```
+make fleet-update                  # update every known Pi
+make fleet-update pwm1 pwm3        # update a subset by tube name
+```
+
+This SSHes into each Pi listed in `scripts/update_fleet.sh` (mapping
+tube name → IP) and runs the same `git pull && sudo make deploy` flow
+on each. Output is prefixed by tube name; failures on one Pi are logged
+but don't abort the rest of the rollout.
+
+When you add a new Pi to the fleet, update **both**:
+
+- `scripts/update_fleet.sh` — the `TUBE_IPS` map
+- `config/irobot.conf` — a new `[<cpu_serial>]` section with the tube's
+  per-Pi center frequency, spread, and (optional) `button_pin`
+
+The script's first run from a given laptop will accept the Pi's host key
+on first connect (`StrictHostKeyChecking=accept-new`); subsequent runs
+go through cleanly.
+
+
 ## Running
 
 There are two ways to control the PWM, either via the keyboard or

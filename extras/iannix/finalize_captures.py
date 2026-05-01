@@ -21,6 +21,20 @@ import sys
 from typing import List, Tuple
 
 
+# Authoritative tube names. Sourced from the `setlabel` lines in the
+# production IanniX score; mirrored in the plot and in CSV headers so the
+# physical tube identity is clear when reading any one file in isolation.
+TUBE_NAMES = {
+    "pwm1": "XC SUBA",
+    "pwm2": "AKI",
+    "pwm3": "AKN",
+    "pwm4": "XP",
+    "pwm5": "SC1",
+    "pwm6": "SC2",
+    "pwm7": "SC3",
+}
+
+
 def read_csv(path: str) -> List[Tuple[float, float]]:
     rows: List[Tuple[float, float]] = []
     with open(path) as fp:
@@ -86,9 +100,12 @@ def rdp(rows, tol):
 def write_csv(path: str, rows, root: str) -> None:
     # Anchor t=0 if needed.
     t0 = rows[0][0] if rows else 0.0
+    name = TUBE_NAMES.get(root)
     with open(path, 'w') as fp:
         fp.write("# scores/{}.csv\n".format(root))
-        fp.write("# Captured from IanniX, truncated and deduplicated\n")
+        if name is not None:
+            fp.write("# {} = {}\n".format(root.upper(), name))
+        fp.write("# Captured from IanniX, RDP-simplified\n")
         fp.write("# t_seconds, fine_value      "
                  "(fine_value in [-1, 1])\n")
         for t, v in rows:

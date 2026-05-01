@@ -6,6 +6,9 @@
 # Raw IanniX captures used to derive scores/*.csv. Regenerate with
 # extras/iannix/osc_sink.py if you need them.
 scores/capture/
+# Player-output captures used to verify the score player end-to-end.
+# Regenerable via extras/iannix/capture_player.sh.
+scores/capture_player/
 # Localhost-rewritten copy of the IanniX score; regenerable via
 # extras/iannix/rewrite_for_localhost.py.
 extras/iannix/*.localhost.iannix

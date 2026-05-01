@@ -1,5 +1,6 @@
 # scores/pwm6.csv
-# Captured from IanniX, truncated and deduplicated
+# PWM6 = SC2
+# Captured from IanniX, RDP-simplified
 # t_seconds, fine_value      (fine_value in [-1, 1])
 0.0000, 0.803446
 5.9156, 0.782305

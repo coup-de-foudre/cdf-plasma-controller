@@ -1,5 +1,6 @@
 # scores/pwm1.csv
-# Captured from IanniX, truncated and deduplicated
+# PWM1 = XC SUBA
+# Captured from IanniX, RDP-simplified
 # t_seconds, fine_value      (fine_value in [-1, 1])
 0.0000, 0.695780
 4.0105, 0.695780

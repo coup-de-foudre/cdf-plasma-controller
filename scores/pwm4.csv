@@ -1,5 +1,6 @@
 # scores/pwm4.csv
-# Captured from IanniX, truncated and deduplicated
+# PWM4 = XP
+# Captured from IanniX, RDP-simplified
 # t_seconds, fine_value      (fine_value in [-1, 1])
 0.0000, 0.689850
 3.9639, 0.689008

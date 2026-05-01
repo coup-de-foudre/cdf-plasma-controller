@@ -1,5 +1,6 @@
 # scores/pwm3.csv
-# Captured from IanniX, truncated and deduplicated
+# PWM3 = AKN
+# Captured from IanniX, RDP-simplified
 # t_seconds, fine_value      (fine_value in [-1, 1])
 0.0000, 0.695420
 5.0601, 0.695119
