@@ -48,7 +48,7 @@ class Score:
     @classmethod
     def from_file(cls, path: str) -> 'Score':
         loop = True
-        samples: List[Tuple[float, float]] = []
+        samples = []
         with open(path, 'r') as fp:
             for raw_line in fp:
                 line = raw_line.strip()

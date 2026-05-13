@@ -33,7 +33,7 @@ class MockButtonWatcher:
         self._on_short = on_short_press
         self._on_long = on_long_press
         self._on_quit = on_quit
-        self._thread: threading.Thread = None  # type: ignore[assignment]
+        self._thread = None
         self._stop = threading.Event()
 
     def start(self) -> None:

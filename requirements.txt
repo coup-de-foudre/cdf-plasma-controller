@@ -21,4 +21,5 @@
 pigpio
 -e ./vendor/python-osc
 pytest
+pytest-rerunfailures
 tox

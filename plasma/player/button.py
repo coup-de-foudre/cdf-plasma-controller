@@ -21,7 +21,7 @@ gives the user immediate audio/visual feedback that their hold registered.
 """
 import logging
 import threading
-from typing import Callable, Optional
+from typing import Callable
 
 import pigpio
 
@@ -43,7 +43,7 @@ class ButtonWatcher:
         self._hold_threshold_s = hold_threshold_s
 
         self._lock = threading.Lock()
-        self._timer: Optional[threading.Timer] = None
+        self._timer = None
         # Set when the long-press timer has already fired for the current
         # hold; the next rising edge is consumed silently.
         self._long_consumed = False
