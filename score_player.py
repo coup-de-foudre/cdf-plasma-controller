@@ -97,7 +97,7 @@ class Player:
         self._lock = threading.Lock()
         # Wallclock time at which playback time 0 occurred. None when paused
         # or idle. Set when transitioning to PLAYING.
-        self._origin_wallclock: float = None  # type: ignore[assignment]
+        self._origin_wallclock = None
         self._stop_event = threading.Event()
 
     @property

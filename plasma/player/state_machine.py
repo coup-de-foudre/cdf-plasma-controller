@@ -15,8 +15,9 @@ States: IDLE / PLAYING / PAUSED.
 Boot safety: the machine always starts in IDLE regardless of the switch's
 initial level. Only edge events (short or long press) cause transitions.
 """
+import collections
 import enum
-from typing import List, NamedTuple
+from typing import List
 
 
 class State(enum.Enum):
@@ -31,9 +32,10 @@ class ActionKind(enum.Enum):
     KILL = "KILL"           # long-press: triple-stop and reset to t=0
 
 
-class Action(NamedTuple):
-    kind: ActionKind
-    t: float = 0.0
+# Functional namedtuple + default keeps us compatible with Python 3.5 on the
+# deployed Pis (PEP 526 class-body annotations require 3.6+).
+Action = collections.namedtuple('Action', ['kind', 't'])
+Action.__new__.__defaults__ = (0.0,)
 
 
 class PlayerStateMachine:
@@ -48,8 +50,8 @@ class PlayerStateMachine:
     """
 
     def __init__(self):
-        self._state: State = State.IDLE
-        self._saved_t: float = 0.0
+        self._state = State.IDLE
+        self._saved_t = 0.0
 
     @property
     def state(self) -> State:
