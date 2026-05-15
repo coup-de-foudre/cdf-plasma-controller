@@ -29,10 +29,12 @@ class MockButtonWatcher:
     def __init__(self,
                  on_short_press: Callable[[], None],
                  on_long_press: Callable[[], None],
-                 on_quit: Callable[[], None]):
+                 on_quit: Callable[[], None],
+                 on_press: Callable[[], None] = lambda: None):
         self._on_short = on_short_press
         self._on_long = on_long_press
         self._on_quit = on_quit
+        self._on_press = on_press
         self._thread = None
         self._stop = threading.Event()
 
@@ -49,23 +51,26 @@ class MockButtonWatcher:
     def stop(self) -> None:
         self._stop.set()
 
+    @staticmethod
+    def _fire(handler: Callable[[], None], name: str) -> None:
+        try:
+            handler()
+        except Exception:
+            logger.exception("%s handler raised", name)
+
     def _run(self) -> None:
         for line in sys.stdin:
             if self._stop.is_set():
                 return
             cmd = line.strip().lower()
             if cmd == '':
-                logger.info("[mock-button] short press")
-                try:
-                    self._on_short()
-                except Exception:
-                    logger.exception("on_short_press handler raised")
+                logger.info("[mock-button] press + short release")
+                self._fire(self._on_press, "on_press")
+                self._fire(self._on_short, "on_short_press")
             elif cmd in ('h', 'hold'):
-                logger.info("[mock-button] long press")
-                try:
-                    self._on_long()
-                except Exception:
-                    logger.exception("on_long_press handler raised")
+                logger.info("[mock-button] press + long hold")
+                self._fire(self._on_press, "on_press")
+                self._fire(self._on_long, "on_long_press")
             elif cmd in ('q', 'quit', 'exit'):
                 logger.info("[mock-button] quit")
                 self._on_quit()

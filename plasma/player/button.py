@@ -35,11 +35,13 @@ class ButtonWatcher:
                  gpio_pin: int,
                  on_short_press: Callable[[], None],
                  on_long_press: Callable[[], None],
+                 on_press: Callable[[], None] = lambda: None,
                  hold_threshold_s: float = 1.0):
         self._pi = pi
         self._pin = gpio_pin
         self._on_short = on_short_press
         self._on_long = on_long_press
+        self._on_press = on_press
         self._hold_threshold_s = hold_threshold_s
 
         self._lock = threading.Lock()
@@ -91,6 +93,12 @@ class ButtonWatcher:
                 self._hold_threshold_s, self._on_threshold_expired)
             self._timer.daemon = True
             self._timer.start()
+        # Notify outside the lock — the handler may take its own lock or
+        # send OSC, neither of which should serialize with our timer state.
+        try:
+            self._on_press()
+        except Exception:
+            logger.exception("on_press handler raised")
 
     def _handle_release(self) -> None:
         with self._lock:
