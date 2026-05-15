@@ -127,6 +127,11 @@ class Player:
                 self._osc.kill()
                 _logger().info("KILL: state -> IDLE, saved_t=0")
 
+    def press_down(self) -> None:
+        with self._lock:
+            actions = self._state_machine.press_down(self._playback_t())
+            self._apply(actions)
+
     def short_press(self) -> None:
         with self._lock:
             actions = self._state_machine.short_press(self._playback_t())
@@ -234,6 +239,7 @@ def main() -> int:
         watcher = MockButtonWatcher(
             on_short_press=player.short_press,
             on_long_press=player.long_press,
+            on_press=player.press_down,
             on_quit=player.request_stop)
         watcher.start()
         pi = None
@@ -248,7 +254,8 @@ def main() -> int:
             pi=pi,
             gpio_pin=button_pin,
             on_short_press=player.short_press,
-            on_long_press=player.long_press)
+            on_long_press=player.long_press,
+            on_press=player.press_down)
         watcher.start()
 
     # SIGINT / SIGTERM both stop the run loop cleanly.
